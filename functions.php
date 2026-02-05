@@ -1854,6 +1854,19 @@ function clarity_moments_base_url(): string
     $options = \Typecho\Widget::widget('Widget_Options');
     $indexBase = $options->index ?? '';
     $templates = ['moments', 'page-moments', 'page-moments.php', 'moments.php'];
+    $normalizeUrl = function (string $url) use ($options): string {
+        $url = trim($url);
+        if ($url === '') {
+            return $options->siteUrl;
+        }
+        if (preg_match('#^https?:/[^/]#i', $url)) {
+            $url = preg_replace('#^(https?):/#i', '$1://', $url, 1);
+        }
+        if (preg_match('#^https?://#i', $url) || strpos($url, '//') === 0) {
+            return $url;
+        }
+        return \Typecho\Common::url($url, $options->siteUrl);
+    };
 
     try {
         $db = \Typecho\Db::get();
@@ -1892,7 +1905,7 @@ function clarity_moments_base_url(): string
 
         if ($row) {
             $url = \Typecho\Router::url('page', $row, $indexBase);
-            return \Typecho\Common::url($url, $options->siteUrl);
+            return $normalizeUrl($url);
         }
     } catch (\Throwable $e) {
     }
