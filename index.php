@@ -4,7 +4,7 @@
  * Clarity
  * @package Clarity
  * @author jkjoy
- * @version 1.0.3
+ * @version 1.0.4
  * @link https://jkjoy.de
  */
 clarity_set('showAside', true);

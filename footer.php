@@ -13,6 +13,30 @@ $uptimeBadgeUrl = trim((string) clarity_opt('footer_uptime_kuma_badge', ''));
 $uptimeStatusUrl = trim((string) clarity_opt('footer_uptime_kuma_url', ''));
 $isLinksPage = clarity_get('isLinksPage', false);
 $linksRandom = clarity_bool(clarity_opt('links_random', '1'));
+$renderIcon = function ($icon) {
+  $icon = trim((string) $icon);
+  if ($icon === '') {
+    return '';
+  }
+  if (preg_match('/icon-\[([a-z0-9]+)--([^\]]+)\]/i', $icon, $match)) {
+    $prefix = strtolower($match[1]);
+    $name = $match[2];
+    $safeName = preg_replace('/[^a-z0-9\-:_]/i', '', $name);
+    $iconName = $prefix . ':' . $safeName;
+    $iconUrl = 'https://api.iconify.design/' . rawurlencode($prefix) . '/' . rawurlencode($safeName) . '.svg';
+    return '<span class="iconify-mask ' . htmlspecialchars($icon, ENT_QUOTES, 'UTF-8') . '" data-icon="' . htmlspecialchars($iconName, ENT_QUOTES, 'UTF-8') . '" style="--icon-url:url(\'' . htmlspecialchars($iconUrl, ENT_QUOTES, 'UTF-8') . '\')"></span>';
+  }
+  if (preg_match('/\\bph\\s+ph-([a-z0-9-]+)\\b/i', $icon, $match)) {
+    $name = strtolower($match[1]);
+    $iconName = 'ph:' . $name;
+    $iconUrl = 'https://api.iconify.design/ph/' . rawurlencode($name) . '.svg';
+    return '<span class="iconify-mask ' . htmlspecialchars($icon, ENT_QUOTES, 'UTF-8') . '" data-icon="' . htmlspecialchars($iconName, ENT_QUOTES, 'UTF-8') . '" style="--icon-url:url(\'' . htmlspecialchars($iconUrl, ENT_QUOTES, 'UTF-8') . '\')"></span>';
+  }
+  if (preg_match('/^(https?:)?\\//i', $icon) || preg_match('/^\\.\\//', $icon) || preg_match('/^\\.\\.\\//', $icon)) {
+    return '<img src="' . htmlspecialchars($icon, ENT_QUOTES, 'UTF-8') . '" alt="" />';
+  }
+  return '<span class="' . htmlspecialchars($icon, ENT_QUOTES, 'UTF-8') . '"></span>';
+};
 ?>
       <footer class="z-footer">
         <nav class="footer-nav">
@@ -45,7 +69,7 @@ $linksRandom = clarity_bool(clarity_opt('links_random', '1'));
                   <li>
                     <a href="<?php echo htmlspecialchars($url, ENT_QUOTES, 'UTF-8'); ?>" target="_blank">
                       <?php if (!empty($icon)): ?>
-                        <img src="<?php echo htmlspecialchars($icon, ENT_QUOTES, 'UTF-8'); ?>" alt="" />
+                        <?php echo $renderIcon($icon); ?>
                       <?php endif; ?>
                       <span class="nav-text"><?php echo htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); ?></span>
                     </a>
@@ -68,7 +92,7 @@ $linksRandom = clarity_bool(clarity_opt('links_random', '1'));
                   <li>
                     <a href="<?php echo htmlspecialchars($url, ENT_QUOTES, 'UTF-8'); ?>" target="_blank">
                       <?php if (!empty($icon)): ?>
-                        <img src="<?php echo htmlspecialchars($icon, ENT_QUOTES, 'UTF-8'); ?>" alt="" />
+                        <?php echo $renderIcon($icon); ?>
                       <?php endif; ?>
                       <span class="nav-text"><?php echo htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); ?></span>
                     </a>
@@ -84,13 +108,13 @@ $linksRandom = clarity_bool(clarity_opt('links_random', '1'));
               <li>
                 <a href="https://typecho.org" target="_blank">
                   <span class="icon-[ph--cube-bold]"></span>
-                  <span class="nav-text">架构于 Typecho</span>
+                  <span class="nav-text">由 Typecho 驱动</span>
                 </a>
               </li>
               <li>
                 <a href="https://github.com/jkjoy/theme-clarity" target="_blank">
                   <span class="icon-[ph--mountains-bold]"></span>
-                  <span class="nav-text">驱动 Clarity <?php echo CLARITY_VERSION; ?></span>
+                  <span class="nav-text">主题 Clarity <?php echo CLARITY_VERSION; ?></span>
                 </a>
               </li>
               <?php if ($beian !== ''): ?>
