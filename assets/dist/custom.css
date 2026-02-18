@@ -453,3 +453,555 @@
   -webkit-mask: var(--icon-url) no-repeat center / contain;
   mask: var(--icon-url) no-repeat center / contain;
 }
+
+/* ==================== 友链朋友圈样式 ==================== */
+
+/* 页面头部 */
+.fcircle-header {
+  margin-bottom: 1.5rem;
+}
+
+.fcircle-title {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.fcircle-title [class^="icon-"] {
+  color: var(--c-primary);
+  font-size: 1.5rem;
+}
+
+.fcircle-title h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* 统计信息 */
+.fcircle-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-item {
+  background: var(--c-bg-2);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stat-value {
+  color: var(--c-primary);
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stat-label {
+  color: var(--c-text-2);
+  display: block;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* 容器 */
+.fcircle-container {
+  animation: fcircle-float-in 0.3s ease backwards;
+}
+
+@keyframes fcircle-float-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 随机文章区域 */
+.random-article-section {
+  background: var(--c-bg-2);
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.random-header {
+  align-items: center;
+  background: linear-gradient(135deg, var(--c-primary-soft) 0%, transparent 100%);
+  border-bottom: 1px solid var(--c-border);
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+}
+
+.random-title {
+  color: var(--c-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.refresh-btn {
+  align-items: center;
+  background: var(--c-bg-1);
+  border: 1px solid var(--c-border);
+  border-radius: 0.5rem;
+  color: var(--c-text-2);
+  cursor: pointer;
+  display: flex;
+  height: 2rem;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 2rem;
+}
+
+.refresh-btn:hover {
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+  transform: rotate(180deg);
+}
+
+.random-article-content {
+  padding: 1rem;
+}
+
+.random-placeholder {
+  color: var(--c-text-3);
+  padding: 1rem;
+  text-align: center;
+}
+
+.random-item {
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: background 0.2s ease;
+  border-radius: 0.5rem;
+}
+
+.random-item:hover {
+  background: var(--c-bg-soft);
+}
+
+.random-author {
+  color: var(--c-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.random-title-text {
+  color: var(--c-text);
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.random-date {
+  color: var(--c-text-3);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+/* 文章列表 */
+.fcircle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.fcircle-item {
+  align-items: center;
+  animation: fcircle-float-in 0.3s ease var(--delay, 0s) backwards;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.fcircle-avatar {
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  height: 2.5rem;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+  width: 2.5rem;
+}
+
+.fcircle-avatar:hover {
+  transform: scale(1.1);
+}
+
+.fcircle-avatar img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.fcircle-content {
+  align-items: center;
+  background: var(--c-bg-2);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  flex: 1;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.fcircle-content:hover {
+  background: var(--c-bg-1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.fcircle-author {
+  color: var(--c-primary);
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fcircle-title-text {
+  color: var(--c-text);
+  flex: 1;
+  font-size: 0.9375rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fcircle-content:hover .fcircle-title-text {
+  color: var(--c-primary);
+}
+
+.fcircle-date {
+  color: var(--c-text-3);
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+/* 空状态 */
+.fcircle-empty {
+  align-items: center;
+  color: var(--c-text-3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.fcircle-empty [class^="icon-"] {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+
+/* 模态框 */
+.fcircle-modal {
+  align-items: center;
+  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  opacity: 0;
+  position: fixed;
+  transition: opacity 0.3s ease;
+  visibility: hidden;
+  z-index: 1000;
+}
+
+.fcircle-modal.modal-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.fcircle-modal .modal-content {
+  background: var(--c-bg-1);
+  border-radius: 1rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  max-height: 80vh;
+  max-width: 500px;
+  overflow-y: auto;
+  padding: 1.5rem;
+  position: relative;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+  width: 90%;
+}
+
+.fcircle-modal.modal-open .modal-content {
+  transform: scale(1);
+}
+
+.modal-header {
+  align-items: center;
+  border-bottom: 1px solid var(--c-border);
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+}
+
+.modal-header img {
+  border-radius: 50%;
+  height: 50px;
+  object-fit: cover;
+  width: 50px;
+}
+
+.modal-header a {
+  color: var(--c-text);
+  flex: 1;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.modal-header a:hover {
+  color: var(--c-primary);
+}
+
+.modal-close {
+  align-items: center;
+  background: var(--c-bg-soft);
+  border: none;
+  border-radius: 50%;
+  color: var(--c-text-2);
+  cursor: pointer;
+  display: flex;
+  height: 2rem;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 2rem;
+}
+
+.modal-close:hover {
+  background: var(--c-danger-soft, rgba(248, 113, 113, 0.1));
+  color: var(--c-danger, #f87171);
+}
+
+.modal-body {
+  position: relative;
+  z-index: 2;
+}
+
+.modal-article {
+  animation: fcircle-float-in 0.3s ease var(--delay, 0s) backwards;
+  border-bottom: 1px solid var(--c-border);
+  padding: 1rem 0;
+}
+
+.modal-article:last-child {
+  border-bottom: none;
+}
+
+.modal-article-title {
+  color: var(--c-text);
+  display: block;
+  font-size: 0.9375rem;
+  margin-bottom: 0.25rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.modal-article-title:hover {
+  color: var(--c-primary);
+}
+
+.modal-article-date {
+  color: var(--c-text-3);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.modal-empty {
+  color: var(--c-text-3);
+  padding: 2rem;
+  text-align: center;
+}
+
+#modal-bg {
+  border-radius: 50%;
+  bottom: 1rem;
+  filter: blur(20px);
+  height: 100px;
+  opacity: 0.3;
+  pointer-events: none;
+  position: absolute;
+  right: 1rem;
+  width: 100px;
+  z-index: 1;
+}
+
+/* ==================== 响应式设计 ==================== */
+
+@media (max-width: 768px) {
+  /* 统计信息 - 移动端 */
+  .fcircle-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .stat-item {
+    padding: 0.75rem;
+  }
+  
+  .stat-value {
+    font-size: 1.25rem;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+  }
+  
+  /* 文章列表 - 移动端 */
+  .fcircle-item {
+    gap: 0.5rem;
+  }
+  
+  .fcircle-avatar {
+    height: 2rem;
+    width: 2rem;
+  }
+  
+  .fcircle-content {
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    padding: 0.625rem 0.75rem;
+  }
+  
+  .fcircle-author {
+    font-size: 0.8125rem;
+    max-width: 80px;
+  }
+  
+  .fcircle-title-text {
+    flex-basis: 100%;
+    font-size: 0.875rem;
+    order: 3;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  
+  .fcircle-date {
+    font-size: 0.6875rem;
+    margin-left: auto;
+  }
+  
+  /* 随机文章 - 移动端 */
+  .random-header {
+    padding: 0.625rem 0.75rem;
+  }
+  
+  .random-title {
+    font-size: 0.875rem;
+  }
+  
+  .random-article-content {
+    padding: 0.75rem;
+  }
+  
+  .random-title-text {
+    font-size: 0.9375rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  
+  /* 模态框 - 移动端 */
+  .fcircle-modal .modal-content {
+    margin: 1rem;
+    max-height: 85vh;
+    padding: 1rem;
+    width: calc(100% - 2rem);
+  }
+  
+  .modal-header {
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+  
+  .modal-header img {
+    height: 40px;
+    width: 40px;
+  }
+  
+  .modal-header a {
+    font-size: 1rem;
+  }
+  
+  .modal-article {
+    padding: 0.75rem 0;
+  }
+  
+  .modal-article-title {
+    font-size: 0.875rem;
+  }
+  
+  #modal-bg {
+    height: 80px;
+    width: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fcircle-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .fcircle-title h1 {
+    font-size: 1.25rem;
+  }
+}
+
+/* 深色模式适配 */
+.dark .stat-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.dark .fcircle-modal {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .fcircle-container,
+  .fcircle-item,
+  .modal-article {
+    animation: none;
+  }
+  
+  .refresh-btn:hover {
+    transform: none;
+  }
+  
+  .fcircle-avatar:hover {
+    transform: none;
+  }
+}

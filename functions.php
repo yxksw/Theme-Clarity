@@ -539,6 +539,42 @@ function themeConfig($form)
     );
     $form->addInput($bangumisUid);
 
+    $fcircleTitle = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_fcircle_title',
+        null,
+        '友链朋友圈',
+        _t('友链朋友圈页面标题')
+    );
+    $form->addInput($fcircleTitle);
+
+    $fcircleApiUrl = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_fcircle_api_url',
+        null,
+        'https://moments.myxz.top/',
+        _t('友链朋友圈 API 地址'),
+        _t('Friend Circle Lite API 地址，默认为 https://moments.myxz.top/')
+    );
+    $form->addInput($fcircleApiUrl);
+
+    $fcirclePageSize = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_fcircle_page_size',
+        null,
+        '20',
+        _t('友链朋友圈每页数量'),
+        _t('每页显示的文章数量')
+    );
+    $fcirclePageSize->input->setAttribute('class', 'w-10');
+    $form->addInput($fcirclePageSize->addRule('isInteger', _t('请填写整数数字')));
+
+    $fcircleErrorImg = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_fcircle_error_img',
+        null,
+        'https://fastly.jsdelivr.net/gh/willow-god/Friend-Circle-Lite@latest/static/favicon.ico',
+        _t('友链朋友圈默认头像'),
+        _t('头像加载失败时显示的默认图片')
+    );
+    $form->addInput($fcircleErrorImg);
+
     $featuredPosts = new \Typecho\Widget\Helper\Form\Element\Text(
         'clarity_featured_posts',
         null,
@@ -2579,4 +2615,148 @@ function clarity_should_show_toc($widget, string $type): bool
         return clarity_bool($widget->fields->toc, $enabled);
     }
     return $enabled;
+}
+
+// 友链朋友圈相关功能
+
+if (!defined('CLARITY_FCIRCLE_CACHE_TTL')) {
+    define('CLARITY_FCIRCLE_CACHE_TTL', 600);
+}
+
+function clarity_fcircle_cache_dir(): string
+{
+    return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'cache';
+}
+
+function clarity_fcircle_cache_file(): string
+{
+    return clarity_fcircle_cache_dir() . DIRECTORY_SEPARATOR . 'clarity-fcircle-data.json';
+}
+
+function clarity_fcircle_cache_read(): ?array
+{
+    $file = clarity_fcircle_cache_file();
+    if (!is_file($file)) {
+        return null;
+    }
+    $raw = @file_get_contents($file);
+    if (!is_string($raw) || $raw === '') {
+        return null;
+    }
+    $payload = json_decode($raw, true);
+    if (!is_array($payload) || !isset($payload['time'], $payload['data']) || !is_array($payload['data'])) {
+        return null;
+    }
+    if (time() - (int) $payload['time'] > CLARITY_FCIRCLE_CACHE_TTL) {
+        return null;
+    }
+    return $payload['data'];
+}
+
+function clarity_fcircle_cache_write(array $data): void
+{
+    $dir = clarity_fcircle_cache_dir();
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0755, true);
+    }
+    if (!is_dir($dir) || !is_writable($dir)) {
+        return;
+    }
+    $file = clarity_fcircle_cache_file();
+    $payload = [
+        'time' => time(),
+        'data' => $data,
+    ];
+    @file_put_contents($file, json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+}
+
+function clarity_fetch_fcircle_data(string $apiUrl): ?array
+{
+    $url = rtrim($apiUrl, '/') . '/all.json';
+    $headers = [
+        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
+        'Accept' => 'application/json',
+    ];
+    
+    $response = '';
+    $headerLines = [];
+    foreach ($headers as $name => $value) {
+        $headerLines[] = $name . ': ' . $value;
+    }
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_HTTPHEADER => $headerLines,
+            CURLOPT_USERAGENT => $headers['User-Agent'],
+        ]);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($httpCode !== 200) {
+            $response = '';
+        }
+    }
+
+    if (!is_string($response) || $response === '') {
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => implode("\r\n", $headerLines),
+                'timeout' => 15,
+            ],
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ],
+        ]);
+        $response = @file_get_contents($url, false, $context);
+    }
+
+    if (!is_string($response) || $response === '') {
+        return null;
+    }
+    
+    $data = json_decode($response, true);
+    if (!is_array($data)) {
+        return null;
+    }
+    
+    return $data;
+}
+
+function clarity_get_fcircle_data(string $apiUrl): array
+{
+    static $memo = null;
+    if ($memo !== null) {
+        return $memo;
+    }
+
+    $cached = clarity_fcircle_cache_read();
+    if (is_array($cached)) {
+        $memo = $cached;
+        return $cached;
+    }
+
+    $data = clarity_fetch_fcircle_data($apiUrl);
+    if (is_array($data)) {
+        clarity_fcircle_cache_write($data);
+        $memo = $data;
+        return $data;
+    }
+
+    return [
+        'statistical_data' => [
+            'friends_num' => 0,
+            'active_num' => 0,
+            'article_num' => 0,
+            'last_updated_time' => '',
+        ],
+        'article_data' => [],
+    ];
 }
