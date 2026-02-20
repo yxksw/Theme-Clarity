@@ -278,9 +278,27 @@ function themeConfig($form)
         null,
         "stats\ntech-info\ncommunity",
         _t('右侧边栏组件顺序'),
-        _t('每行一个：stats / tech-info / weather / moments / community / sponsor / custom')
+        _t('每行一个：stats / tech-info / weather / moments / community / sponsor / custom / meting / welcome / poetry / blog-log / recent-comments / announcement')
     );
     $form->addInput($asideWidgets);
+
+    $blogLogTitle = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_blog_log_title',
+        null,
+        '更新日志',
+        _t('博客日志标题'),
+        _t('显示在侧边栏的标题')
+    );
+    $form->addInput($blogLogTitle);
+
+    $blogLogData = new \Typecho\Widget\Helper\Form\Element\Textarea(
+        'clarity_blog_log_data',
+        null,
+        '[]',
+        _t('博客日志数据'),
+        _t('JSON格式的日志数组，每行一个对象，如：[{"date": "2025-07-26", "content": "重构到 Nuxt 4..."}]')
+    );
+    $form->addInput($blogLogData);
 
     $siteStart = new \Typecho\Widget\Helper\Form\Element\Text(
         'clarity_site_start_time',
@@ -396,13 +414,49 @@ function themeConfig($form)
     );
     $form->addInput($customWidgetHtml);
 
-    $weatherKey = new \Typecho\Widget\Helper\Form\Element\Text(
-        'clarity_weather_key',
+    $weatherApiUrl = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_weather_api_url',
+        null,
+        'https://60s.050815.xyz/v2/weather?query=%E5%B8%B8%E7%86%9F',
+        _t('天气 API 地址'),
+        _t('默认使用 60s API，可自定义其他天气 API 地址')
+    );
+    $form->addInput($weatherApiUrl);
+
+    $announcementEnable = new \Typecho\Widget\Helper\Form\Element\Radio(
+        'clarity_announcement_enable',
+        ['1' => _t('开启'), '0' => _t('关闭')],
+        '0',
+        _t('公告组件'),
+        _t('是否在侧边栏显示公告组件')
+    );
+    $form->addInput($announcementEnable);
+
+    $announcementLevel = new \Typecho\Widget\Helper\Form\Element\Select(
+        'clarity_announcement_level',
+        [
+            'info' => _t('信息'),
+            'note' => _t('笔记'),
+            'tip' => _t('提示'),
+            'happy' => _t('快乐'),
+            'important' => _t('重要'),
+            'warning' => _t('警告'),
+            'caution' => _t('注意'),
+        ],
+        'info',
+        _t('公告类型'),
+        _t('选择公告的样式类型')
+    );
+    $form->addInput($announcementLevel);
+
+    $announcementContent = new \Typecho\Widget\Helper\Form\Element\Textarea(
+        'clarity_announcement_content',
         null,
         '',
-        _t('心知天气 API Key')
+        _t('公告内容'),
+        _t('支持 Markdown 格式，可以使用 **粗体**、*斜体*、[链接](url) 等语法')
     );
-    $form->addInput($weatherKey);
+    $form->addInput($announcementContent);
 
     $momentsWidgetTitle = new \Typecho\Widget\Helper\Form\Element\Text(
         'clarity_moments_widget_title',
@@ -454,6 +508,42 @@ function themeConfig($form)
     );
     $momentsPageSize->input->setAttribute('class', 'w-10');
     $form->addInput($momentsPageSize->addRule('isInteger', _t('请填写整数数字')));
+
+    // 打赏设置
+    $rewardTitle = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_reward_title',
+        null,
+        '感谢你赐予我前进的力量',
+        _t('打赏弹窗标题')
+    );
+    $form->addInput($rewardTitle);
+
+    $rewardWechat = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_reward_wechat',
+        null,
+        '',
+        _t('微信打赏二维码'),
+        _t('填写微信收款二维码图片URL')
+    );
+    $form->addInput($rewardWechat);
+
+    $rewardAlipay = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_reward_alipay',
+        null,
+        '',
+        _t('支付宝打赏二维码'),
+        _t('填写支付宝收款二维码图片URL')
+    );
+    $form->addInput($rewardAlipay);
+
+    $rewardListUrl = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_reward_list_url',
+        null,
+        '/reward.html',
+        _t('赞赏者名单页面链接'),
+        _t('点击赞赏者名单跳转的页面地址')
+    );
+    $form->addInput($rewardListUrl);
 
     $linksTitle = new \Typecho\Widget\Helper\Form\Element\Text(
         'clarity_links_title',
@@ -550,9 +640,9 @@ function themeConfig($form)
     $fcircleApiUrl = new \Typecho\Widget\Helper\Form\Element\Text(
         'clarity_fcircle_api_url',
         null,
-        'https://moments.myxz.top/',
+        'https://fc.050815.xyz/',
         _t('友链朋友圈 API 地址'),
-        _t('Friend Circle Lite API 地址，默认为 https://moments.myxz.top/')
+        _t('Friend Circle Lite API 地址，默认为 https://fc.050815.xyz/')
     );
     $form->addInput($fcircleApiUrl);
 
@@ -569,11 +659,262 @@ function themeConfig($form)
     $fcircleErrorImg = new \Typecho\Widget\Helper\Form\Element\Text(
         'clarity_fcircle_error_img',
         null,
-        'https://fastly.jsdelivr.net/gh/willow-god/Friend-Circle-Lite@latest/static/favicon.ico',
+        'https://img.314926.xyz',
         _t('友链朋友圈默认头像'),
         _t('头像加载失败时显示的默认图片')
     );
     $form->addInput($fcircleErrorImg);
+
+    $fcircleCoverImg = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_fcircle_cover_img',
+        null,
+        '',
+        _t('友链朋友圈封面图片'),
+        _t('页面顶部封面图片 URL，留空使用默认渐变背景')
+    );
+    $form->addInput($fcircleCoverImg);
+
+    $fcircleDesc = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_fcircle_desc',
+        null,
+        '探索友链博客的最新动态',
+        _t('友链朋友圈页面描述'),
+        _t('显示在标题下方的描述文字')
+    );
+    $form->addInput($fcircleDesc);
+
+    // 关于页面配置
+    $aboutTitle = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_title',
+        null,
+        '关于',
+        _t('关于页面标题')
+    );
+    $form->addInput($aboutTitle);
+
+    $authorAvatar = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_author_avatar',
+        null,
+        '',
+        _t('作者头像'),
+        _t('关于页面作者头像 URL，留空使用主题默认头像')
+    );
+    $form->addInput($authorAvatar);
+
+    $aboutAuthorLeftTags = new \Typecho\Widget\Helper\Form\Element\Textarea(
+        'clarity_about_author_left_tags',
+        null,
+        "💻 Like数码科技\n🥣 干饭魂 干饭人\n🕊 咕咕咕咕咕咕~\n🧱 CV工程师",
+        _t('作者左侧标签'),
+        _t('每行一个标签，最多4个')
+    );
+    $form->addInput($aboutAuthorLeftTags);
+
+    $aboutAuthorRightTags = new \Typecho\Widget\Helper\Form\Element\Textarea(
+        'clarity_about_author_right_tags',
+        null,
+        "吃饭不如碎觉 💤\n乐观 积极 向上 🤝\n专攻各种困难 🔨\n人不狠话超多 💢",
+        _t('作者右侧标签'),
+        _t('每行一个标签，最多4个')
+    );
+    $form->addInput($aboutAuthorRightTags);
+
+    $aboutMyInfoTitle1 = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_myinfo_title1',
+        null,
+        '你好，很高兴认识你👋',
+        _t('个人介绍标题一')
+    );
+    $form->addInput($aboutMyInfoTitle1);
+
+    $aboutMyInfoTitle2 = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_myinfo_title2',
+        null,
+        '我叫',
+        _t('个人介绍标题二')
+    );
+    $form->addInput($aboutMyInfoTitle2);
+
+    $aboutMyInfoName = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_myinfo_name',
+        null,
+        '博主',
+        _t('博主名称')
+    );
+    $form->addInput($aboutMyInfoName);
+
+    $aboutMyInfoContent1 = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_myinfo_content1',
+        null,
+        '是一名 前端工程师、学生、',
+        _t('个人介绍内容一')
+    );
+    $form->addInput($aboutMyInfoContent1);
+
+    $aboutMyInfoContent2 = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_myinfo_content2',
+        null,
+        '博主',
+        _t('个人介绍内容二')
+    );
+    $form->addInput($aboutMyInfoContent2);
+
+    $aboutCardTips = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_card_tips',
+        null,
+        '追求',
+        _t('卡片提示文字')
+    );
+    $form->addInput($aboutCardTips);
+
+    $aboutCardContent1 = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_card_content1',
+        null,
+        '源于',
+        _t('卡片内容一')
+    );
+    $form->addInput($aboutCardContent1);
+
+    $aboutCardContent2 = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_card_content2',
+        null,
+        '热爱而去',
+        _t('卡片内容二')
+    );
+    $form->addInput($aboutCardContent2);
+
+    $aboutCardInlineWord = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_card_inlineword',
+        null,
+        '感受',
+        _t('卡片高亮文字')
+    );
+    $form->addInput($aboutCardInlineWord);
+
+    $aboutCardMaskWords = new \Typecho\Widget\Helper\Form\Element\Textarea(
+        'clarity_about_card_mask_words',
+        null,
+        "学习\n生活\n程序\n体验",
+        _t('轮播文字'),
+        _t('每行一个，共4个，用于轮播动画')
+    );
+    $form->addInput($aboutCardMaskWords);
+
+    $aboutMaximTip = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_maxim_tip',
+        null,
+        '座右铭',
+        _t('座右铭提示')
+    );
+    $form->addInput($aboutMaximTip);
+
+    $aboutMaximTitle1 = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_maxim_title1',
+        null,
+        '生活明朗，',
+        _t('座右铭标题一')
+    );
+    $form->addInput($aboutMaximTitle1);
+
+    $aboutMaximTitle2 = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_maxim_title2',
+        null,
+        '万物可爱。',
+        _t('座右铭标题二')
+    );
+    $form->addInput($aboutMaximTitle2);
+
+    $aboutSingleTip = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_single_tip',
+        null,
+        '心路历程',
+        _t('历程提示')
+    );
+    $form->addInput($aboutSingleTip);
+
+    $aboutSingleTitle = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_single_title',
+        null,
+        '为何而建站',
+        _t('历程标题')
+    );
+    $form->addInput($aboutSingleTitle);
+
+    $aboutSingleContent = new \Typecho\Widget\Helper\Form\Element\Textarea(
+        'clarity_about_single_content',
+        null,
+        '本站是综合类型博客，集成文章、说说、友链、留言、装备等栏目。',
+        _t('历程内容')
+    );
+    $form->addInput($aboutSingleContent);
+
+    $aboutSingleLishi = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_about_single_lishi',
+        null,
+        '『博客』历史进程',
+        _t('历程历史')
+    );
+    $form->addInput($aboutSingleLishi);
+
+    $aboutSkills = new \Typecho\Widget\Helper\Form\Element\Textarea(
+        'clarity_about_skills',
+        null,
+        '{"name":"Vue","color":"#b8f0ae","icon":"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg"}
+{"name":"Java","color":"#fff","icon":"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg"}
+{"name":"Webpack","color":"#2e3a41","icon":"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/webpack/webpack-original.svg"}
+{"name":"Photoshop","color":"#4082c3","icon":"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/photoshop/photoshop-plain.svg"}
+{"name":"Python","color":"#fff","icon":"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg"}
+{"name":"Node","color":"#333","icon":"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg"}
+{"name":"Git","color":"#df5b40","icon":"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg"}
+{"name":"CSS","color":"#2c51db","icon":"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg"}
+{"name":"JS","color":"#f7cb4f","icon":"https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"}',
+        _t('技能列表'),
+        _t('每行一个技能，格式：{"name":"技能名","color":"背景色","icon":"图标URL"}')
+    );
+    $form->addInput($aboutSkills);
+
+    // Memos/说说页面配置
+    $memosTitle = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_memos_title',
+        null,
+        '说说',
+        _t('说说页面标题')
+    );
+    $form->addInput($memosTitle);
+
+    $memosDesc = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_memos_desc',
+        null,
+        '记录生活点滴，一些想法',
+        _t('说说页面描述')
+    );
+    $form->addInput($memosDesc);
+
+    $memosApiUrl = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_memos_api_url',
+        null,
+        'https://tg-api.050815.xyz/',
+        _t('说说 API 地址'),
+        _t('Memos 数据接口地址')
+    );
+    $form->addInput($memosApiUrl);
+
+    $memosAuthorName = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_memos_author_name',
+        null,
+        '博主',
+        _t('说说作者名称')
+    );
+    $form->addInput($memosAuthorName);
+
+    $memosAuthorAvatar = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_memos_author_avatar',
+        null,
+        '',
+        _t('说说作者头像'),
+        _t('留空使用主题默认头像')
+    );
+    $form->addInput($memosAuthorAvatar);
 
     $featuredPosts = new \Typecho\Widget\Helper\Form\Element\Text(
         'clarity_featured_posts',
@@ -844,6 +1185,172 @@ function themeConfig($form)
     echo '<div id="clarity-backup-message" class="description" style="margin-top:6px;display:none;"></div>';
     echo '</li></ul>';
 
+    // Meting 音乐播放器配置
+    $metingEnable = new \Typecho\Widget\Helper\Form\Element\Checkbox(
+        'clarity_meting_enable',
+        ['1' => _t('启用音乐播放器')],
+        [],
+        _t('音乐播放器'),
+        _t('在侧边栏显示 Meting 音乐播放器')
+    );
+    $form->addInput($metingEnable);
+
+    $metingApi = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_meting_api',
+        null,
+        'https://meting.kemiaosw.top',
+        _t('Meting API 地址'),
+        _t('Meting API 服务地址，例如：https://meting.kemiaosw.top')
+    );
+    $form->addInput($metingApi);
+
+    $metingServer = new \Typecho\Widget\Helper\Form\Element\Select(
+        'clarity_meting_server',
+        ['netease' => _t('网易云音乐'), 'tencent' => _t('QQ音乐'), 'kugou' => _t('酷狗音乐'), 'kuwo' => _t('酷我音乐'), 'bilibili' => _t('哔哩哔哩'), 'baidu' => _t('百度音乐')],
+        'netease',
+        _t('音乐平台')
+    );
+    $form->addInput($metingServer);
+
+    $metingType = new \Typecho\Widget\Helper\Form\Element\Select(
+        'clarity_meting_type',
+        ['playlist' => _t('歌单'), 'album' => _t('专辑'), 'artist' => _t('歌手'), 'song' => _t('单曲')],
+        'playlist',
+        _t('获取类型')
+    );
+    $form->addInput($metingType);
+
+    $metingId = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_meting_id',
+        null,
+        '',
+        _t('歌单/专辑/歌手 ID'),
+        _t('填写网易云音乐或其他平台的歌单/专辑/歌手 ID')
+    );
+    $form->addInput($metingId);
+
+    $metingTitle = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_meting_title',
+        null,
+        '随心听',
+        _t('播放器标题')
+    );
+    $form->addInput($metingTitle);
+
+    // 欢迎来访者组件配置
+    $welcomeEnable = new \Typecho\Widget\Helper\Form\Element\Checkbox(
+        'clarity_welcome_enable',
+        ['1' => _t('启用欢迎来访者组件')],
+        [],
+        _t('欢迎来访者'),
+        _t('在侧边栏显示欢迎来访者信息')
+    );
+    $form->addInput($welcomeEnable);
+
+    $welcomeTitle = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_welcome_title',
+        null,
+        '欢迎来访者',
+        _t('欢迎组件标题')
+    );
+    $form->addInput($welcomeTitle);
+
+    $welcomeApi = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_welcome_api',
+        null,
+        'https://whois.pconline.com.cn/ipJson.jsp',
+        _t('IP 查询 API'),
+        _t('用于获取来访者地理位置的 API 地址')
+    );
+    $form->addInput($welcomeApi);
+
+    // 诗词组件配置
+    $poetryEnable = new \Typecho\Widget\Helper\Form\Element\Checkbox(
+        'clarity_poetry_enable',
+        ['1' => _t('启用诗词组件')],
+        [],
+        _t('每日诗词'),
+        _t('在侧边栏显示每日一句诗词（使用今日诗词 SDK）')
+    );
+    $form->addInput($poetryEnable);
+
+    $poetryTitle = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_poetry_title',
+        null,
+        '每日诗词',
+        _t('诗词组件标题')
+    );
+    $form->addInput($poetryTitle);
+
+    // 装备页面配置
+    $equipmentApi = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_equipment_api',
+        null,
+        'https://cofe.050815.xyz/api/devices',
+        _t('装备数据 API'),
+        _t('装备页面数据来源 API 地址')
+    );
+    $form->addInput($equipmentApi);
+
+    $equipmentTitle = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_equipment_title',
+        null,
+        '我的装备',
+        _t('装备页面标题')
+    );
+    $form->addInput($equipmentTitle);
+
+    $equipmentDesc = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_equipment_desc',
+        null,
+        '记录我的数字生活装备',
+        _t('装备页面描述')
+    );
+    $form->addInput($equipmentDesc);
+
+    // 打赏页面配置
+    $rewardApi = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_reward_api',
+        null,
+        'https://cofe.050815.xyz/api/rewards',
+        _t('打赏数据 API'),
+        _t('打赏页面数据来源 API 地址')
+    );
+    $form->addInput($rewardApi);
+
+    $rewardTitle = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_reward_title',
+        null,
+        '支持一下',
+        _t('打赏页面标题')
+    );
+    $form->addInput($rewardTitle);
+
+    $rewardDesc = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_reward_desc',
+        null,
+        '感谢您的支持与鼓励',
+        _t('打赏页面描述')
+    );
+    $form->addInput($rewardDesc);
+
+    // 画廊页面配置
+    $galleryTitle = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_gallery_title',
+        null,
+        '画廊',
+        _t('画廊页面标题')
+    );
+    $form->addInput($galleryTitle);
+
+    $galleryDesc = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_gallery_desc',
+        null,
+        '随机图片画廊',
+        _t('画廊页面描述')
+    );
+    $form->addInput($galleryDesc);
+
     echo '<script>(function(){var init=function(){var form=document.querySelector(\'form[action*="themes-edit"]\');var actionInput=document.getElementById(\'clarity-backup-action\');var targetInput=document.getElementById(\'clarity-backup-target\');var updateInput=document.getElementById(\'clarity-update-action\');var message=document.getElementById(\'clarity-backup-message\');if(!form){return;}var showMsg=function(text,type){if(!message){return;}message.textContent=text;message.style.display=\'block\';if(type===\'success\'){message.style.color=\'#1a7f37\';}else if(type===\'warn\'){message.style.color=\'#b78103\';}else{message.style.color=\'#d14343\';}};document.querySelectorAll(\'[data-backup-action]\').forEach(function(btn){btn.addEventListener(\'click\',function(){if(!actionInput||!targetInput){return;}var action=btn.getAttribute(\'data-backup-action\');if(!action){return;}var target=btn.getAttribute(\'data-backup-id\')||\'\';if((action===\'restore\'||action===\'delete\')&&!target){showMsg(\'请选择要操作的备份\',\'error\');return;}if(action===\'delete\'){if(!btn.dataset.confirmed){btn.dataset.confirmed=\'1\';showMsg(\'再次点击删除以确认\', \'warn\');setTimeout(function(){btn.dataset.confirmed=\'\';}, 3000);return;}btn.dataset.confirmed=\'\';}actionInput.value=action;targetInput.value=target;if(updateInput){updateInput.value=\'\';}form.submit();});});document.querySelectorAll(\'[data-update-action]\').forEach(function(btn){btn.addEventListener(\'click\',function(){if(!updateInput){return;}var action=btn.getAttribute(\'data-update-action\');if(!action){return;}updateInput.value=action;if(actionInput){actionInput.value=\'\';}if(targetInput){targetInput.value=\'\';}form.submit();});});};if(document.readyState===\'loading\'){document.addEventListener(\'DOMContentLoaded\',init);}else{init();}})();</script>';
 }
 
@@ -1039,6 +1546,15 @@ function themeFields($layout)
         _t('来源提示文案')
     );
     $layout->addItem($postOriginalText);
+
+    $summary = new \Typecho\Widget\Helper\Form\Element\Textarea(
+        'summary',
+        null,
+        '',
+        _t('文章摘要'),
+        _t('自定义文章摘要，留空则自动截取正文前 120 字')
+    );
+    $layout->addItem($summary);
 }
 
 function clarity_opt(string $key, $default = null)
@@ -1049,6 +1565,29 @@ function clarity_opt(string $key, $default = null)
         return $options->{$name};
     }
     return $default;
+}
+
+function clarity_markdown_to_html(string $content): string
+{
+    if (trim($content) === '') {
+        return '';
+    }
+    
+    // 简单的 Markdown 解析
+    $html = htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
+    
+    // 粗体 **text**
+    $html = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $html);
+    // 斜体 *text*
+    $html = preg_replace('/\*(.+?)\*/', '<em>$1</em>', $html);
+    // 链接 [text](url)
+    $html = preg_replace('/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>', $html);
+    // 行内代码 `code`
+    $html = preg_replace('/`([^`]+)`/', '<code>$1</code>', $html);
+    // 换行符转 <br>
+    $html = nl2br($html);
+    
+    return $html;
 }
 
 function clarity_theme_name(): string
@@ -2569,11 +3108,12 @@ function clarity_render_pagination($widget, string $mode = 'index'): void
 function clarity_get_widgets(): array
 {
     $raw = trim((string) clarity_opt('aside_widgets', ''));
+    
     if ($raw === '') {
         return ['stats', 'tech-info', 'community'];
     }
-    $items = clarity_parse_lines($raw);
-    return $items;
+    
+    return clarity_parse_lines($raw);
 }
 
 function clarity_get_latest_post_time(): ?string
@@ -2590,6 +3130,65 @@ function clarity_get_post_count(): int
 {
     $stat = \Typecho\Widget::widget('Widget_Stat');
     return (int) ($stat->publishedPostsNum ?? 0);
+}
+
+function clarity_get_recent_comments(int $limit = 5): array
+{
+    try {
+        // 使用 Typecho 原生的 Widget 方式获取评论
+        $comments = \Typecho\Widget::widget('Widget_Comments_Recent', 'pageSize=' . $limit);
+        
+        $results = [];
+        while ($comments->next()) {
+            // 获取文章信息
+            $post = null;
+            try {
+                $db = \Typecho\Db::get();
+                $post = $db->fetchRow(
+                    $db->select('title', 'slug', 'type', 'created')
+                        ->from('table.contents')
+                        ->where('cid = ?', $comments->cid)
+                        ->limit(1)
+                );
+            } catch (\Throwable $e) {
+                // ignore
+            }
+            
+            // 构建文章链接 - 根据你的固定链接规则
+            $permalink = '';
+            if (!empty($post)) {
+                $options = \Typecho\Widget::widget('Widget_Options');
+                $type = $post['type'];
+                $slug = $post['slug'];
+                $cid = $comments->cid;
+                
+                // 根据文章类型构建链接
+                if ($type == 'post') {
+                    // 文章链接: /archives/{cid}/
+                    $permalink = $options->index . '/archives/' . $cid . '/';
+                } else {
+                    // 页面链接: /{slug}
+                    $permalink = $options->index . '/' . $slug;
+                }
+            }
+            
+            $results[] = [
+                'coid' => $comments->coid,
+                'cid' => $comments->cid,
+                'author' => $comments->author,
+                'mail' => $comments->mail,
+                'url' => $comments->url,
+                'text' => $comments->text,
+                'created' => $comments->created,
+                'post_title' => $post['title'] ?? '',
+                'post_permalink' => $permalink,
+            ];
+        }
+        
+        return $results;
+    } catch (\Throwable $e) {
+        return [];
+    }
 }
 
 function clarity_get_views($post): ?int
@@ -2758,5 +3357,103 @@ function clarity_get_fcircle_data(string $apiUrl): array
             'last_updated_time' => '',
         ],
         'article_data' => [],
+    ];
+}
+
+// 关于页面数据获取函数
+function clarity_get_about_data(): array
+{
+    // 作者标签
+    $leftTagsRaw = trim((string) clarity_opt('about_author_left_tags', ''));
+    $rightTagsRaw = trim((string) clarity_opt('about_author_right_tags', ''));
+    
+    $leftTags = [];
+    $rightTags = [];
+    
+    if (!empty($leftTagsRaw)) {
+        $lines = array_filter(array_map('trim', explode("\n", $leftTagsRaw)));
+        $leftTags[] = [
+            '标签1' => $lines[0] ?? '',
+            '标签2' => $lines[1] ?? '',
+            '标签3' => $lines[2] ?? '',
+            '标签4' => $lines[3] ?? '',
+        ];
+    }
+    
+    if (!empty($rightTagsRaw)) {
+        $lines = array_filter(array_map('trim', explode("\n", $rightTagsRaw)));
+        $rightTags[] = [
+            '标签1' => $lines[0] ?? '',
+            '标签2' => $lines[1] ?? '',
+            '标签3' => $lines[2] ?? '',
+            '标签4' => $lines[3] ?? '',
+        ];
+    }
+    
+    // 轮播文字
+    $maskWordsRaw = trim((string) clarity_opt('about_card_mask_words', ''));
+    $maskWords = [];
+    if (!empty($maskWordsRaw)) {
+        $lines = array_filter(array_map('trim', explode("\n", $maskWordsRaw)));
+        $maskWords[] = [
+            '第一' => $lines[0] ?? '学习',
+            '第二' => $lines[1] ?? '生活',
+            '第三' => $lines[2] ?? '程序',
+            '第四' => $lines[3] ?? '体验',
+        ];
+    }
+    
+    // 技能列表
+    $skillsRaw = trim((string) clarity_opt('about_skills', ''));
+    $skills = [];
+    if (!empty($skillsRaw)) {
+        $lines = array_filter(array_map('trim', explode("\n", $skillsRaw)));
+        foreach ($lines as $line) {
+            $skill = json_decode($line, true);
+            if (is_array($skill) && isset($skill['name'])) {
+                $skills[] = $skill;
+            }
+        }
+    }
+    
+    return [
+        'author' => [
+            '左侧' => $leftTags,
+            '右侧' => $rightTags,
+        ],
+        'myinfo' => [
+            [
+                '标题一' => clarity_opt('about_myinfo_title1', '你好，很高兴认识你👋'),
+                '标题二' => clarity_opt('about_myinfo_title2', '我叫'),
+                '博主名称' => clarity_opt('about_myinfo_name', '博主'),
+                '内容一' => clarity_opt('about_myinfo_content1', '是一名 前端工程师、学生、'),
+                '内容二' => clarity_opt('about_myinfo_content2', '博主'),
+                '卡片' => [
+                    [
+                        '标题' => clarity_opt('about_card_tips', '追求'),
+                        '内容1' => clarity_opt('about_card_content1', '源于'),
+                        '内容2' => clarity_opt('about_card_content2', '热爱而去'),
+                        '显示' => clarity_opt('about_card_inlineword', '感受'),
+                        '轮播' => $maskWords,
+                    ],
+                ],
+            ],
+        ],
+        'maxim' => [
+            [
+                'tip' => clarity_opt('about_maxim_tip', '座右铭'),
+                'title1' => clarity_opt('about_maxim_title1', '生活明朗，'),
+                'title2' => clarity_opt('about_maxim_title2', '万物可爱。'),
+            ],
+        ],
+        'single' => [
+            [
+                'tip' => clarity_opt('about_single_tip', '心路历程'),
+                'title' => clarity_opt('about_single_title', '为何而建站'),
+                'content' => clarity_opt('about_single_content', '本站是综合类型博客，集成文章、说说、友链、留言、装备等栏目。'),
+                'lishi' => clarity_opt('about_single_lishi', '『博客』历史进程'),
+            ],
+        ],
+        'skills' => $skills,
     ];
 }

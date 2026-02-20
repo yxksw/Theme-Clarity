@@ -156,6 +156,11 @@ $customHeadHtml = trim((string) clarity_opt('headhtml', ''));
       })();
     </script>
     <script type="module" src="<?php $this->options->themeUrl('assets/dist/main.js'); ?>?v=<?php echo CLARITY_VERSION; ?>"></script>
+    <?php $poetryEnableOpt = clarity_opt('poetry_enable', []); ?>
+    <?php $poetryEnable = is_array($poetryEnableOpt) ? in_array('1', $poetryEnableOpt) : clarity_bool($poetryEnableOpt); ?>
+    <?php if ($poetryEnable): ?>
+    <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js"></script>
+    <?php endif; ?>
 
     <style>
       :root,

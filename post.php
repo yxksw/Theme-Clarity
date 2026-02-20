@@ -1,7 +1,6 @@
 <?php if (!defined('__TYPECHO_ROOT_DIR__')) exit; ?>
 <?php
-$enableToc = clarity_should_show_toc($this, 'post');
-clarity_set('showAside', $enableToc);
+clarity_set('showAside', true);
 clarity_set('pageTitle', null);
 clarity_set('isLinksPage', false);
 ?>
@@ -145,44 +144,89 @@ $commentCount = $this->commentsNum ?? 0;
   <?php $this->content(); ?>
 </article>
 
-<div class="post-footer">
-  <?php if (!empty($this->tags)): ?>
-    <section class="tags-section">
-      <div class="title text-creative">文章标签</div>
-      <div class="content tags-list">
-        <?php foreach ($this->tags as $tag): ?>
-          <a class="tag-item" href="<?php echo htmlspecialchars($tag['permalink'], ENT_QUOTES, 'UTF-8'); ?>">#<?php echo htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8'); ?></a>
-        <?php endforeach; ?>
-      </div>
-    </section>
-  <?php endif; ?>
-
-  <section class="license">
-    <?php if ($isOriginal): ?>
-      <div class="title text-creative">许可协议</div>
-      <div class="content">
-        本文采用
-        <a href="<?php echo htmlspecialchars($hasCustomLicense ? $customLicenseUrl : clarity_opt('license_url', ''), ENT_QUOTES, 'UTF-8'); ?>" target="_blank">
-          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" style="vertical-align:-0.125em;display:inline">
-            <path fill="currentColor" d="M9 8c1.104 0 2.105.448 2.829 1.173l-1.414 1.413a2 2 0 1 0 0 2.828l1.413 1.414A4.001 4.001 0 0 1 5 12c0-2.208 1.792-4 4-4m9.829 1.173A4.001 4.001 0 0 0 12 12a4.001 4.001 0 0 0 6.828 2.828l-1.414-1.414a2 2 0 1 1 0-2.828zM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12m10-8a8 8 0 1 0 0 16a8 8 0 0 0 0-16" />
-          </svg>
-          <?php if ($hasCustomLicense): ?>
-            <span><?php echo htmlspecialchars($customLicenseText, ENT_QUOTES, 'UTF-8'); ?></span>
+<!-- 新样式文章底部 -->
+<div class="post-footer-v2">
+  <!-- 版权信息卡片 -->
+  <div class="post-footer-main">
+    <div class="footer-content">
+      <h3 class="footer-title"><?php $this->title(); ?></h3>
+      <a href="<?php echo htmlspecialchars($this->permalink, ENT_QUOTES, 'UTF-8'); ?>" class="footer-link">
+        <?php echo htmlspecialchars($this->options->siteUrl, ENT_QUOTES, 'UTF-8'); ?><?php echo htmlspecialchars(str_replace($this->options->siteUrl, '', $this->permalink), ENT_QUOTES, 'UTF-8'); ?>
+      </a>
+      <div class="footer-meta">
+        <div class="meta-col">
+          <span class="meta-label">作者</span>
+          <span class="meta-val"><?php echo htmlspecialchars($this->author->screenName ?? $this->author->name, ENT_QUOTES, 'UTF-8'); ?></span>
+        </div>
+        <div class="meta-col">
+          <span class="meta-label">许可协议</span>
+          <?php if ($isOriginal): ?>
+            <a href="<?php echo htmlspecialchars($hasCustomLicense ? $customLicenseUrl : clarity_opt('license_url', 'https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans'), ENT_QUOTES, 'UTF-8'); ?>" target="_blank" class="meta-val link">
+              <?php echo htmlspecialchars($hasCustomLicense ? $customLicenseText : clarity_opt('license', 'CC BY-NC-SA 4.0'), ENT_QUOTES, 'UTF-8'); ?>
+            </a>
           <?php else: ?>
-            <span><?php echo htmlspecialchars(clarity_opt('license', ''), ENT_QUOTES, 'UTF-8'); ?></span>
+            <span class="meta-val">转载</span>
           <?php endif; ?>
-        </a>
-        许可协议，转载请注明出处。
+        </div>
       </div>
-    <?php else: ?>
-      <?php
-      $replaceHtml = '<a href="' . htmlspecialchars($originUrl, ENT_QUOTES, 'UTF-8') . '" target="_blank">' . htmlspecialchars($originName, ENT_QUOTES, 'UTF-8') . '</a>';
-      $originContent = str_replace('{post_original}', $replaceHtml, $originText);
-      ?>
-      <div class="title text-creative">文章来源</div>
-      <div class="content"><?php echo $originContent; ?></div>
-    <?php endif; ?>
-  </section>
+    </div>
+    <div class="footer-icon">
+      <span class="copyright-icon"></span>
+    </div>
+  </div>
+
+  <!-- 标签和打赏区域 -->
+  <div class="post-footer-bottom">
+    <div class="footer-tags">
+      <?php if (!empty($this->tags)): ?>
+        <?php foreach ($this->tags as $tag): ?>
+          <a class="footer-tag" href="<?php echo htmlspecialchars($tag['permalink'], ENT_QUOTES, 'UTF-8'); ?>">
+            <?php echo htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8'); ?>
+            <span class="tag-num"><?php echo $tag['count']; ?></span>
+          </a>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    </div>
+    <button class="footer-reward" id="reward-btn" title="打赏支持">
+      <span class="icon-[ph--sparkle-bold]"></span>
+      <span>打赏</span>
+    </button>
+  </div>
+</div>
+
+<!-- 打赏弹窗 -->
+<div id="reward-modal" class="reward-modal" style="display:none;">
+  <div class="reward-overlay"></div>
+  <div class="reward-content">
+    <button class="reward-close" id="reward-close">
+      <span class="icon-[ph--x-bold]"></span>
+    </button>
+    <div class="reward-body">
+      <h3 class="reward-title"><?php echo htmlspecialchars(clarity_opt('reward_title', '感谢你赐予我前进的力量'), ENT_QUOTES, 'UTF-8'); ?></h3>
+      <div class="reward-qrcode-list">
+        <?php 
+        $wechatQR = clarity_opt('reward_wechat', '');
+        $alipayQR = clarity_opt('reward_alipay', '');
+        ?>
+        <?php if ($wechatQR): ?>
+          <div class="reward-item">
+            <img src="<?php echo htmlspecialchars($wechatQR, ENT_QUOTES, 'UTF-8'); ?>" alt="微信打赏" class="reward-qrcode">
+            <span class="reward-label">微信</span>
+          </div>
+        <?php endif; ?>
+        <?php if ($alipayQR): ?>
+          <div class="reward-item">
+            <img src="<?php echo htmlspecialchars($alipayQR, ENT_QUOTES, 'UTF-8'); ?>" alt="支付宝打赏" class="reward-qrcode">
+            <span class="reward-label">支付宝</span>
+          </div>
+        <?php endif; ?>
+      </div>
+      <a href="<?php echo htmlspecialchars(clarity_opt('reward_list_url', '/reward.html'), ENT_QUOTES, 'UTF-8'); ?>" class="reward-list-link" target="_blank">
+        <span class="reward-list-title">赞赏者名单</span>
+        <span class="reward-list-desc">因为你们的支持让我意识到写文章的价值🙏</span>
+      </a>
+    </div>
+  </div>
 </div>
 
 <?php
@@ -406,6 +450,27 @@ if (clarity_bool(clarity_opt('enable_edit', '0')) && $user->hasLogin()):
           text.textContent = oldText;
         }, 2000);
       });
+    }
+
+    // 打赏弹窗控制
+    const rewardBtn = document.getElementById('reward-btn');
+    const rewardModal = document.getElementById('reward-modal');
+    const rewardClose = document.getElementById('reward-close');
+    const rewardOverlay = rewardModal?.querySelector('.reward-overlay');
+
+    if (rewardBtn && rewardModal) {
+      rewardBtn.addEventListener('click', () => {
+        rewardModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      });
+
+      const closeReward = () => {
+        rewardModal.style.display = 'none';
+        document.body.style.overflow = '';
+      };
+
+      rewardClose?.addEventListener('click', closeReward);
+      rewardOverlay?.addEventListener('click', closeReward);
     }
   })();
 </script>

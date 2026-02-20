@@ -1,7 +1,12 @@
 <?php if (!defined('__TYPECHO_ROOT_DIR__')) exit; ?>
 <?php
-$enableToc = clarity_should_show_toc($this, 'page');
-clarity_set('showAside', $enableToc);
+$pageTemplate = $this->template ?? '';
+$isSpecialPage = in_array($pageTemplate, ['gallery', 'photos', 'links']);
+if ($isSpecialPage) {
+    clarity_set('showAside', false);
+} else {
+    clarity_set('showAside', true);
+}
 clarity_set('pageTitle', null);
 clarity_set('isLinksPage', false);
 ?>

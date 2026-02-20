@@ -7,6 +7,8 @@
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 $fcircleTitle = trim((string) clarity_opt('fcircle_title', '友链朋友圈'));
+$fcircleDesc = trim((string) clarity_opt('fcircle_desc', '探索友链博客的最新动态'));
+$fcircleCoverImg = trim((string) clarity_opt('fcircle_cover_img', ''));
 clarity_set('showAside', true);
 clarity_set('pageTitle', $fcircleTitle);
 clarity_set('isLinksPage', false);
@@ -50,10 +52,18 @@ $fcircleSep = strpos($fcircleBase, '?') === false ? '?' : '&';
 ?>
 <?php $this->need('header.php'); ?>
 
-<div class="fcircle-header">
-  <div class="fcircle-title">
-    <span class="icon-[ph--users-three-bold]"></span>
-    <h1 class="text-creative"><?php echo htmlspecialchars($fcircleTitle, ENT_QUOTES, 'UTF-8'); ?></h1>
+<!-- 页面 Banner - 参考 header.vue 组件风格 -->
+<div class="fcircle-page-banner">
+  <div class="fcircle-cover-wrapper">
+    <?php if (!empty($fcircleCoverImg)): ?>
+      <img src="<?php echo htmlspecialchars($fcircleCoverImg, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($fcircleTitle, ENT_QUOTES, 'UTF-8'); ?>" class="fcircle-cover-image">
+    <?php else: ?>
+      <span class="icon-[ph--users-three-bold] fcircle-cover-icon"></span>
+    <?php endif; ?>
+  </div>
+  <div class="fcircle-header-wrapper">
+    <h3 class="fcircle-page-title"><?php echo htmlspecialchars($fcircleTitle, ENT_QUOTES, 'UTF-8'); ?></h3>
+    <span class="fcircle-page-desc"><?php echo htmlspecialchars($fcircleDesc, ENT_QUOTES, 'UTF-8'); ?></span>
   </div>
 </div>
 
