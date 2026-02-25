@@ -105,11 +105,14 @@ if (!function_exists('threadedComments')) {
 ?>
 
 <?php $this->comments()->to($comments); ?>
+<?php
+$commentFormPosition = (string) clarity_opt('comment_form_position', 'before');
+if ($commentFormPosition !== 'before' && $commentFormPosition !== 'after') {
+    $commentFormPosition = 'before';
+}
 
-<?php if ($comments->have()): ?>
-  <?php $comments->listComments(); ?>
-  <?php $comments->pageNav('&laquo;', '&raquo;'); ?>
-<?php endif; ?>
+ob_start();
+?>
 
 <?php if ($this->allow('comment')): ?>
   <div class="comment-respond" id="<?php echo htmlspecialchars($this->respondId, ENT_QUOTES, 'UTF-8'); ?>">
@@ -147,4 +150,19 @@ if (!function_exists('threadedComments')) {
   </div>
 <?php else: ?>
   <p class="comments-closed"><?php _e('评论已关闭'); ?></p>
+<?php endif; ?>
+
+<?php $commentFormHtml = (string) ob_get_clean(); ?>
+
+<?php if ($commentFormPosition === 'before'): ?>
+  <?php echo $commentFormHtml; ?>
+<?php endif; ?>
+
+<?php if ($comments->have()): ?>
+  <?php $comments->listComments(); ?>
+  <?php $comments->pageNav('&laquo;', '&raquo;'); ?>
+<?php endif; ?>
+
+<?php if ($commentFormPosition === 'after'): ?>
+  <?php echo $commentFormHtml; ?>
 <?php endif; ?>

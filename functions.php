@@ -708,6 +708,15 @@ function themeConfig($form)
     );
     $form->addInput($enablePageJump);
 
+    $commentFormPosition = new \Typecho\Widget\Helper\Form\Element\Select(
+        'clarity_comment_form_position',
+        ['before' => _t('评论列表之前'), 'after' => _t('评论列表之后')],
+        'before',
+        _t('评论表单位置'),
+        _t('控制评论表单显示在评论列表之前或之后')
+    );
+    $form->addInput($commentFormPosition);
+
     $headhtml = new \Typecho\Widget\Helper\Form\Element\Textarea(
         'clarity_headhtml',
         null,
