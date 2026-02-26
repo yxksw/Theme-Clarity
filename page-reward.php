@@ -11,7 +11,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 $this->need('header.php');
 
 // 获取配置
-$rewardApi = trim((string) clarity_opt('reward_api', 'https://cofe.050815.xyz/api/rewards'));
+$rewardApi = 'https://cdn.jsdmirror.cn/gh/yxksw/Friends@main/data/sponsors.json';
 $rewardTitle = trim((string) clarity_opt('reward_title', '打赏支持'));
 $rewardDesc = trim((string) clarity_opt('reward_desc', '您的支持是我前进的动力'));
 
@@ -546,41 +546,7 @@ echo $inlineCss;
       </div>
     </div>
 
-    <!-- 收款码 -->
-    <div class="reward-qrcodes" id="reward-qrcodes" style="display: none;">
-      <div class="qrcode-section">
-        <h2 class="section-title">收款方式</h2>
-        <div class="qrcode-grid">
-          <div class="qrcode-item" id="alipay-item">
-            <div class="qrcode-card">
-              <div class="qrcode-header">
-                <span class="qrcode-name">支付宝</span>
-              </div>
-              <div class="qrcode-image">
-                <img id="alipay-img" src="" alt="支付宝收款码" loading="lazy">
-              </div>
-            </div>
-          </div>
-          <div class="qrcode-item" id="wechat-item">
-            <div class="qrcode-card">
-              <div class="qrcode-header">
-                <span class="qrcode-name">微信</span>
-              </div>
-              <div class="qrcode-image">
-                <img id="wechat-img" src="" alt="微信收款码" loading="lazy">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- 感谢图片 -->
-      <div class="thank-section" id="thank-section" style="display: none;">
-        <div class="thank-card">
-          <img id="thank-img" src="" alt="感谢" loading="lazy">
-        </div>
-      </div>
-    </div>
 
     <!-- 赞赏者列表 -->
     <div class="reward-list-section">
@@ -607,8 +573,6 @@ echo $inlineCss;
 (function() {
   const apiUrl = '<?php echo htmlspecialchars($rewardApi, ENT_QUOTES); ?>';
   const statsEl = document.getElementById('reward-stats');
-  const qrcodesEl = document.getElementById('reward-qrcodes');
-  const thankSectionEl = document.getElementById('thank-section');
   const rewardListEl = document.getElementById('reward-list');
 
   // 格式化日期
@@ -616,179 +580,6 @@ echo $inlineCss;
     if (!dateStr) return '-';
     const date = new Date(dateStr);
     return date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
-  }
-
-  // 渲染统计信息
-  function renderStats(data) {
-    document.getElementById('stat-total').textContent = data.total || 0;
-    document.getElementById('stat-amount').textContent = data.totalAmount || '0';
-    document.getElementById('stat-update').textContent = data.updatedAt ? formatDate(data.updatedAt) : '-';
-    statsEl.style.display = 'flex';
-  }
-
-  // 渲染收款码
-  function renderPayment(payment) {
-    if (payment && payment.alipay) {
-      const alipayItem = document.getElementById('alipay-item');
-      const alipayImg = document.getElementById('alipay-img');
-      if (payment.alipay.image) {
-        // 移除旧的a标签（如果存在）
-        const oldAlipayLink = alipayItem.querySelector('a');
-        if (oldAlipayLink) {
-          oldAlipayLink.remove();
-        }
-        
-        // 创建新的a标签用于fancybox
-        const alipayLink = document.createElement('a');
-        alipayLink.href = payment.alipay.image;
-        alipayLink.className = 'fancybox-link';
-        alipayLink.onclick = function(e) {
-          e.preventDefault();
-          // 使用主题的Fancybox初始化方式
-          const images = [
-            {
-              src: payment.alipay.image,
-              caption: payment.alipay.name || '支付宝收款码'
-            }
-          ];
-          
-          const openFancybox = function() {
-            window.Fancybox && window.Fancybox.show(images);
-          };
-          
-          if (window.Fancybox) {
-            openFancybox();
-          } else {
-            // 如果Fancybox还没加载，等待加载完成
-            window.__clarityFancyboxLoading && window.__clarityFancyboxLoading.then(() => {
-              openFancybox();
-            });
-          }
-        };
-        
-        // 清空并重新添加图片
-        alipayImg.src = payment.alipay.image;
-        alipayImg.alt = payment.alipay.name || '支付宝收款码';
-        
-        // 将图片添加到a标签中
-        alipayLink.appendChild(alipayImg.cloneNode(true));
-        
-        // 替换原来的图片容器内容
-        const qrcodeImage = alipayItem.querySelector('.qrcode-image');
-        qrcodeImage.innerHTML = '';
-        qrcodeImage.appendChild(alipayLink);
-        
-        alipayItem.style.display = 'block';
-      }
-    }
-
-    if (payment && payment.wechat) {
-      const wechatItem = document.getElementById('wechat-item');
-      const wechatImg = document.getElementById('wechat-img');
-      if (payment.wechat.image) {
-        // 移除旧的a标签（如果存在）
-        const oldWechatLink = wechatItem.querySelector('a');
-        if (oldWechatLink) {
-          oldWechatLink.remove();
-        }
-        
-        // 创建新的a标签用于fancybox
-        const wechatLink = document.createElement('a');
-        wechatLink.href = payment.wechat.image;
-        wechatLink.className = 'fancybox-link';
-        wechatLink.onclick = function(e) {
-          e.preventDefault();
-          // 使用主题的Fancybox初始化方式
-          const images = [
-            {
-              src: payment.wechat.image,
-              caption: payment.wechat.name || '微信收款码'
-            }
-          ];
-          
-          const openFancybox = function() {
-            window.Fancybox && window.Fancybox.show(images);
-          };
-          
-          if (window.Fancybox) {
-            openFancybox();
-          } else {
-            // 如果Fancybox还没加载，等待加载完成
-            window.__clarityFancyboxLoading && window.__clarityFancyboxLoading.then(() => {
-              openFancybox();
-            });
-          }
-        };
-        
-        // 清空并重新添加图片
-        wechatImg.src = payment.wechat.image;
-        wechatImg.alt = payment.wechat.name || '微信收款码';
-        
-        // 将图片添加到a标签中
-        wechatLink.appendChild(wechatImg.cloneNode(true));
-        
-        // 替换原来的图片容器内容
-        const qrcodeImage = wechatItem.querySelector('.qrcode-image');
-        qrcodeImage.innerHTML = '';
-        qrcodeImage.appendChild(wechatLink);
-        
-        wechatItem.style.display = 'block';
-      }
-    }
-
-    qrcodesEl.style.display = 'block';
-  }
-
-  // 渲染感谢图片
-  function renderThankImage(thankImage) {
-    if (thankImage) {
-      const thankCard = document.getElementById('thank-section').querySelector('.thank-card');
-      
-      // 移除旧的内容
-      thankCard.innerHTML = '';
-      
-      // 创建新的a标签用于fancybox
-      const thankLink = document.createElement('a');
-      thankLink.href = thankImage;
-      thankLink.className = 'fancybox-link';
-      thankLink.onclick = function(e) {
-        e.preventDefault();
-        // 使用主题的Fancybox初始化方式
-        const images = [
-          {
-            src: thankImage,
-            caption: '感谢'
-          }
-        ];
-        
-        const openFancybox = function() {
-          window.Fancybox && window.Fancybox.show(images);
-        };
-        
-        if (window.Fancybox) {
-          openFancybox();
-        } else {
-          // 如果Fancybox还没加载，等待加载完成
-          window.__clarityFancyboxLoading && window.__clarityFancyboxLoading.then(() => {
-            openFancybox();
-          });
-        }
-      };
-      
-      // 创建新的img标签
-      const thankImg = document.createElement('img');
-      thankImg.src = thankImage;
-      thankImg.alt = '感谢';
-      thankImg.loading = 'lazy';
-      
-      // 将图片添加到a标签中
-      thankLink.appendChild(thankImg);
-      
-      // 将a标签添加到thank-card中
-      thankCard.appendChild(thankLink);
-      
-      thankSectionEl.style.display = 'block';
-    }
   }
 
   // 渲染赞赏者列表
@@ -830,20 +621,30 @@ echo $inlineCss;
       const response = await fetch(apiUrl);
       if (!response.ok) throw new Error('Network response was not ok');
       
-      const result = await response.json();
-      console.log('Reward API response:', result);
+      const list = await response.json();
+      console.log('Reward data:', list);
       
-      if (result.code !== 0 || !result.data) {
-        throw new Error(result.msg || 'Invalid data');
+      if (!Array.isArray(list)) {
+        throw new Error('Invalid data format');
       }
 
-      const data = result.data;
+      // 计算统计数据
+      const total = list.length;
+      const totalAmount = list.reduce((sum, item) => {
+        const amount = parseFloat(item.amount?.replace(/[^\d.]/g, '') || 0);
+        return sum + amount;
+      }, 0).toFixed(2) + '￥';
+      
+      const latestDate = list.length > 0 ? list[0].date : null;
 
-      // 渲染各个部分
-      renderStats(data);
-      renderPayment(data.payment);
-      renderThankImage(data.thankImage);
-      renderSupporters(data.list);
+      // 渲染统计数据
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-amount').textContent = totalAmount;
+      document.getElementById('stat-update').textContent = latestDate ? formatDate(latestDate) : '-';
+      statsEl.style.display = 'flex';
+
+      // 渲染赞赏者列表
+      renderSupporters(list);
 
     } catch (error) {
       console.error('Failed to load reward data:', error);

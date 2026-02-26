@@ -728,5 +728,8 @@ $renderIcon = function ($icon) {
     }
   })();
   </script>
+  
+  <!-- 网站分析仪表板 -->
+  <script defer src="https://han.050815.xyz/tracker.min.js" data-website-id="clarity"></script>
 </body>
 </html>

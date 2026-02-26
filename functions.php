@@ -3193,11 +3193,17 @@ function clarity_get_recent_comments(int $limit = 5): array
 
 function clarity_get_views($post): ?int
 {
+    // 方式1：使用插件提供的 get_post_view() 函数
     if (function_exists('get_post_view')) {
         return (int) get_post_view($post->cid);
     }
+    // 方式2：使用文章的 views 字段
     if (isset($post->views)) {
         return (int) $post->views;
+    }
+    // 方式3：适配 TePostViews 插件的 viewsNum 字段
+    if (isset($post->viewsNum)) {
+        return (int) $post->viewsNum;
     }
     return null;
 }
