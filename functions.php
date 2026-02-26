@@ -14,7 +14,7 @@ if (!defined('CLARITY_VERSION')) {
 }
 
 if (!defined('CLARITY_BANGUMI_CACHE_TTL')) {
-    define('CLARITY_BANGUMI_CACHE_TTL', 21600);
+    define('CLARITY_BANGUMI_CACHE_TTL', 86400);
 }
 
 if (!defined('CLARITY_GITHUB_UPDATE_TTL')) {
@@ -582,7 +582,7 @@ function themeConfig($form)
         'clarity_links_data',
         null,
         '',
-        _t('友链数据（JSON，Links 插件未启用时使用）'),
+        _t('友链数据（JSON，Enhancement 插件未启用时使用）'),
         _t('示例：[{"title":"友链","description":"","links":[{"name":"站点","url":"https://","logo":"","desc":""}]}]')
     );
     $form->addInput($linksData);
@@ -916,6 +916,15 @@ function themeConfig($form)
     );
     $form->addInput($memosAuthorAvatar);
 
+    $bangumiCacheMinutes = new \Typecho\Widget\Helper\Form\Element\Text(
+        'clarity_bangumi_cache_minutes',
+        null,
+        '1440',
+        _t('追番缓存时间（分钟）'),
+        _t('默认 1440 分钟（24 小时），最小 1 分钟')
+    );
+    $form->addInput($bangumiCacheMinutes);
+
     $featuredPosts = new \Typecho\Widget\Helper\Form\Element\Text(
         'clarity_featured_posts',
         null,
@@ -1084,6 +1093,15 @@ function themeConfig($form)
         _t('分页跳转')
     );
     $form->addInput($enablePageJump);
+
+    $commentFormPosition = new \Typecho\Widget\Helper\Form\Element\Select(
+        'clarity_comment_form_position',
+        ['before' => _t('评论列表之前'), 'after' => _t('评论列表之后')],
+        'before',
+        _t('评论表单位置'),
+        _t('控制评论表单显示在评论列表之前或之后')
+    );
+    $form->addInput($commentFormPosition);
 
     $headhtml = new \Typecho\Widget\Helper\Form\Element\Textarea(
         'clarity_headhtml',
@@ -1889,6 +1907,27 @@ function clarity_bangumi_cache_file(string $uid): string
     return clarity_bangumi_cache_dir() . DIRECTORY_SEPARATOR . 'clarity-bangumis-' . $safeUid . '.json';
 }
 
+function clarity_bangumi_cache_ttl(): int
+{
+    $defaultMinutes = (int) floor((int) CLARITY_BANGUMI_CACHE_TTL / 60);
+    if ($defaultMinutes <= 0) {
+        $defaultMinutes = 1440;
+    }
+
+    $minutes = (int) clarity_opt('bangumi_cache_minutes', (string) $defaultMinutes);
+    if ($minutes <= 0) {
+        $minutes = $defaultMinutes;
+    }
+    if ($minutes < 1) {
+        $minutes = 1;
+    }
+    if ($minutes > 525600) {
+        $minutes = 525600;
+    }
+
+    return $minutes * 60;
+}
+
 function clarity_bangumi_cache_read(string $uid): ?array
 {
     $file = clarity_bangumi_cache_file($uid);
@@ -1903,7 +1942,8 @@ function clarity_bangumi_cache_read(string $uid): ?array
     if (!is_array($payload) || !isset($payload['time'], $payload['data']) || !is_array($payload['data'])) {
         return null;
     }
-    if (time() - (int) $payload['time'] > CLARITY_BANGUMI_CACHE_TTL) {
+    if (time() - (int) $payload['time'] > clarity_bangumi_cache_ttl()) {
+        @unlink($file);
         return null;
     }
     return $payload['data'];
@@ -2949,9 +2989,21 @@ function clarity_get_cover($post): string
 
 function clarity_get_excerpt($post, int $length = 120): string
 {
+    $decodeExcerptText = static function (string $text): string {
+        $decoded = $text;
+        for ($i = 0; $i < 2; $i++) {
+            $next = html_entity_decode($decoded, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if ($next === $decoded) {
+                break;
+            }
+            $decoded = $next;
+        }
+        return trim(strip_tags($decoded));
+    };
+
     $summary = clarity_get_custom_field_value($post, 'summary');
     if ($summary !== '') {
-        $summaryText = trim(strip_tags($summary));
+        $summaryText = $decodeExcerptText($summary);
         if ($summaryText !== '') {
             if ($length > 0) {
                 return \Typecho\Common::subStr($summaryText, 0, $length, '...');
@@ -2961,7 +3013,7 @@ function clarity_get_excerpt($post, int $length = 120): string
     }
     ob_start();
     $post->excerpt($length, '...');
-    return trim((string) ob_get_clean());
+    return $decodeExcerptText((string) ob_get_clean());
 }
 
 function clarity_render_author_capsule($post): void
@@ -3191,21 +3243,193 @@ function clarity_get_recent_comments(int $limit = 5): array
     }
 }
 
+function clarity_views_cookie_key(): string
+{
+    return 'clarity_contents_views';
+}
+
+function clarity_views_cookie_read(): array
+{
+    $raw = '';
+    if (class_exists('\\Typecho\\Cookie')) {
+        $raw = (string) \Typecho\Cookie::get(clarity_views_cookie_key(), '');
+    } elseif (class_exists('Typecho_Cookie')) {
+        $raw = (string) Typecho_Cookie::get(clarity_views_cookie_key());
+    }
+
+    if ($raw === '') {
+        return [];
+    }
+
+    $items = array_filter(array_map('trim', explode(',', $raw)), function ($item) {
+        return $item !== '';
+    });
+    return array_values(array_unique($items));
+}
+
+function clarity_views_cookie_write(array $items): void
+{
+    $items = array_values(array_unique(array_filter(array_map('strval', $items), function ($item) {
+        return $item !== '';
+    })));
+    if (count($items) > 1000) {
+        $items = array_slice($items, -1000);
+    }
+    $value = implode(',', $items);
+
+    if (class_exists('\\Typecho\\Cookie')) {
+        \Typecho\Cookie::set(clarity_views_cookie_key(), $value);
+    } elseif (class_exists('Typecho_Cookie')) {
+        Typecho_Cookie::set(clarity_views_cookie_key(), $value);
+    }
+}
+
+function clarity_views_cookie_has(int $cid): bool
+{
+    if ($cid <= 0) {
+        return true;
+    }
+    return in_array((string) $cid, clarity_views_cookie_read(), true);
+}
+
+function clarity_views_cookie_add(int $cid): void
+{
+    if ($cid <= 0) {
+        return;
+    }
+    $items = clarity_views_cookie_read();
+    $items[] = (string) $cid;
+    clarity_views_cookie_write($items);
+}
+
+function clarity_views_is_single($post): bool
+{
+    if (!is_object($post) || !method_exists($post, 'is')) {
+        return false;
+    }
+    try {
+        return (bool) $post->is('single');
+    } catch (\Throwable $e) {
+        return false;
+    }
+}
+
+function clarity_views_ensure_column(): bool
+{
+    static $exists = null;
+    if ($exists !== null) {
+        return $exists;
+    }
+
+    $exists = false;
+    $db = null;
+    try {
+        $db = \Typecho\Db::get();
+        // If this query succeeds, the column exists even when the table has no rows.
+        $db->fetchRow($db->select('views')->from('table.contents')->limit(1));
+        $exists = true;
+        return true;
+    } catch (\Throwable $e) {
+    }
+
+    try {
+        if (!$db) {
+            $db = \Typecho\Db::get();
+        }
+        $prefix = $db->getPrefix();
+        $adapter = strtolower((string) $db->getAdapterName());
+        if (strpos($adapter, 'pgsql') !== false) {
+            $db->query('ALTER TABLE "' . $prefix . 'contents" ADD COLUMN "views" INT DEFAULT 0');
+        } else {
+            $db->query('ALTER TABLE `' . $prefix . 'contents` ADD `views` INT(10) NOT NULL DEFAULT 0');
+        }
+        $db->fetchRow($db->select('views')->from('table.contents')->limit(1));
+        $exists = true;
+    } catch (\Throwable $e) {
+        $exists = false;
+    }
+
+    return $exists;
+}
+
 function clarity_get_views($post): ?int
 {
-    // 方式1：使用插件提供的 get_post_view() 函数
+    $cid = isset($post->cid) ? (int) $post->cid : 0;
+    if ($cid <= 0) {
+        return null;
+    }
+
     if (function_exists('get_post_view')) {
-        return (int) get_post_view($post->cid);
+        try {
+            ob_start();
+            $value = get_post_view($post);
+            $echoed = trim((string) ob_get_clean());
+            if (is_numeric($value)) {
+                return (int) $value;
+            }
+            if (is_numeric($echoed)) {
+                return (int) $echoed;
+            }
+        } catch (\Throwable $e) {
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+        }
+        try {
+            ob_start();
+            $value = get_post_view($cid);
+            $echoed = trim((string) ob_get_clean());
+            if (is_numeric($value)) {
+                return (int) $value;
+            }
+            if (is_numeric($echoed)) {
+                return (int) $echoed;
+            }
+        } catch (\Throwable $e) {
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+        }
     }
-    // 方式2：使用文章的 views 字段
-    if (isset($post->views)) {
-        return (int) $post->views;
-    }
-    // 方式3：适配 TePostViews 插件的 viewsNum 字段
+    // 适配 TePostViews 插件的 viewsNum 字段
     if (isset($post->viewsNum)) {
         return (int) $post->viewsNum;
     }
-    return null;
+
+    if (!clarity_views_ensure_column()) {
+        if (isset($post->views)) {
+            return (int) $post->views;
+        }
+        return null;
+    }
+
+    try {
+        $db = \Typecho\Db::get();
+        $row = $db->fetchRow(
+            $db->select('views')
+                ->from('table.contents')
+                ->where('cid = ?', $cid)
+                ->limit(1)
+        );
+        $views = isset($row['views']) ? (int) $row['views'] : 0;
+
+        if (clarity_views_is_single($post) && !clarity_views_cookie_has($cid)) {
+            $views++;
+            $db->query(
+                $db->update('table.contents')
+                    ->rows(['views' => $views])
+                    ->where('cid = ?', $cid)
+            );
+            clarity_views_cookie_add($cid);
+        }
+
+        return $views;
+    } catch (\Throwable $e) {
+        if (isset($post->views)) {
+            return (int) $post->views;
+        }
+        return null;
+    }
 }
 
 function clarity_should_show_toc($widget, string $type): bool
