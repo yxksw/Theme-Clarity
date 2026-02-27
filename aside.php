@@ -548,11 +548,19 @@ $poetryTitle = trim((string) clarity_opt('poetry_title', '每日诗词'));
               $shown = 0;
               foreach ($moments as $moment):
                   if ($shown >= $momentsCount) break;
-                  $content = $moment['content'] ?? '';
+                  $statusRaw = strtolower(trim((string) ($moment['status'] ?? 'public')));
+                  $isPrivateMoment = $statusRaw === 'private';
+                  $content = $isPrivateMoment ? '当前瞬间为私密状态，已隐藏' : ($moment['content'] ?? '');
                   $time = $moment['time'] ?? '';
                   $tags = $moment['tags'] ?? [];
+                  if (!is_array($tags)) {
+                      $tags = [];
+                  }
+                  if ($isPrivateMoment) {
+                      $tags = [];
+                  }
                   $url = $moment['url'] ?? '#';
-                  $hasMedia = !empty($moment['media']);
+                  $hasMedia = $isPrivateMoment ? false : !empty($moment['media']);
                   $shown++;
               ?>
                 <article class="moment-item" data-has-media="<?php echo $hasMedia ? 'true' : 'false'; ?>">

@@ -2661,12 +2661,29 @@ function clarity_moments_items(int $limit = 0): array
                 $time = $timestamp > 0 ? date('Y-m-d H:i', $timestamp) : '';
                 $pageNumber = $pageSize > 0 ? (int) floor($index / $pageSize) + 1 : 1;
                 $pageParam = $pageNumber > 1 ? ($baseSep . 'page=' . $pageNumber) : '';
+                $statusRaw = strtolower(trim((string) ($row['status'] ?? 'public')));
+                $status = $statusRaw === 'private' ? 'private' : 'public';
+                $locationAddress = trim((string) ($row['location_address'] ?? ''));
+                $latitude = trim((string) ($row['latitude'] ?? ''));
+                $longitude = trim((string) ($row['longitude'] ?? ''));
+                $location = $locationAddress;
+                if ($location === '' && $latitude !== '' && $longitude !== '') {
+                    $location = $latitude . ',' . $longitude;
+                }
+                $sourceRaw = strtolower(trim((string) ($row['source'] ?? 'web')));
+                $source = in_array($sourceRaw, ['web', 'mobile', 'api'], true) ? $sourceRaw : 'web';
                 $items[] = [
                     'id' => $id,
                     'content' => (string) ($row['content'] ?? ''),
                     'time' => $time,
                     'tags' => clarity_moments_parse_tags($row['tags'] ?? ''),
                     'media' => clarity_moments_parse_media($row['media'] ?? '', $options->siteUrl),
+                    'status' => $status,
+                    'location' => $location,
+                    'location_address' => $locationAddress,
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
+                    'source' => $source,
                     'url' => $id !== '' ? ($baseUrl . $pageParam . '#' . $id) : ($baseUrl . $pageParam),
                 ];
             }
@@ -2766,17 +2783,20 @@ function clarity_render_featured_posts(array $featuredPosts): void
     <div class="z-slide-body">
       <div class="slide-list" id="<?php echo $containerId; ?>">
         <?php foreach ($featuredPosts as $post): ?>
-          <?php $cover = clarity_get_cover($post); ?>
+          <?php
+          $cover = clarity_get_cover($post);
+          $postTitle = clarity_display_text((string) ($post->title ?? ''));
+          ?>
           <a href="<?php echo $post->permalink; ?>" class="slide-item gradient-card" title="<?php echo htmlspecialchars(clarity_get_excerpt($post, 120), ENT_QUOTES, 'UTF-8'); ?>">
             <?php if ($cover !== ''): ?>
-              <img src="<?php echo htmlspecialchars($cover, ENT_QUOTES, 'UTF-8'); ?>" class="cover" loading="lazy" alt="<?php echo htmlspecialchars($post->title, ENT_QUOTES, 'UTF-8'); ?>" />
+              <img src="<?php echo htmlspecialchars($cover, ENT_QUOTES, 'UTF-8'); ?>" class="cover" loading="lazy" alt="<?php echo $postTitle; ?>" />
             <?php else: ?>
               <div class="cover flex items-center justify-center bg-gray-200 dark:bg-gray-700">
                 <span class="icon-[ph--image-broken] text-4xl opacity-20"></span>
               </div>
             <?php endif; ?>
             <div class="info">
-              <div class="title text-creative"><?php echo htmlspecialchars($post->title, ENT_QUOTES, 'UTF-8'); ?></div>
+              <div class="title text-creative"><?php echo $postTitle; ?></div>
               <div class="desc">
                 <span class="icon-[ph--calendar-dots-bold]"></span>
                 <span><?php echo $post->date('Y-m-d'); ?></span>
@@ -2987,23 +3007,29 @@ function clarity_get_cover($post): string
     return '';
 }
 
+function clarity_decode_text(string $text): string
+{
+    $decoded = $text;
+    for ($i = 0; $i < 2; $i++) {
+        $next = html_entity_decode($decoded, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        if ($next === $decoded) {
+            break;
+        }
+        $decoded = $next;
+    }
+    return trim(strip_tags($decoded));
+}
+
+function clarity_display_text(string $text): string
+{
+    return htmlspecialchars(clarity_decode_text($text), ENT_QUOTES, 'UTF-8');
+}
+
 function clarity_get_excerpt($post, int $length = 120): string
 {
-    $decodeExcerptText = static function (string $text): string {
-        $decoded = $text;
-        for ($i = 0; $i < 2; $i++) {
-            $next = html_entity_decode($decoded, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            if ($next === $decoded) {
-                break;
-            }
-            $decoded = $next;
-        }
-        return trim(strip_tags($decoded));
-    };
-
     $summary = clarity_get_custom_field_value($post, 'summary');
     if ($summary !== '') {
-        $summaryText = $decodeExcerptText($summary);
+        $summaryText = clarity_decode_text($summary);
         if ($summaryText !== '') {
             if ($length > 0) {
                 return \Typecho\Common::subStr($summaryText, 0, $length, '...');
@@ -3013,7 +3039,7 @@ function clarity_get_excerpt($post, int $length = 120): string
     }
     ob_start();
     $post->excerpt($length, '...');
-    return $decodeExcerptText((string) ob_get_clean());
+    return clarity_decode_text((string) ob_get_clean());
 }
 
 function clarity_render_author_capsule($post): void

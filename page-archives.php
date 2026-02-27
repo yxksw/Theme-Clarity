@@ -70,7 +70,7 @@ try {
                   </span>
                 <?php endif; ?>
                 <span class="icon-[ph--folder]"></span>
-                <span><?php echo htmlspecialchars($categories->name, ENT_QUOTES, 'UTF-8'); ?></span>
+                <span><?php echo clarity_display_text((string) $categories->name); ?></span>
               </a>
             </li>
           <?php endwhile; ?>
@@ -107,13 +107,14 @@ try {
               $timeText = $created ? date('m/d', $created) : '';
               $cover = $post['cover'] ?? '';
               $excerpt = $post['excerpt'] ?? '';
+              $postTitle = clarity_display_text((string) ($post['title'] ?? ''));
               ?>
               <li class="article-item" style="--delay: <?php echo $delay; ?>s">
                 <time><?php echo htmlspecialchars((string) $timeText, ENT_QUOTES, 'UTF-8'); ?></time>
                 <a href="<?php echo htmlspecialchars((string) $post['permalink'], ENT_QUOTES, 'UTF-8'); ?>" class="article-link gradient-card" title="<?php echo htmlspecialchars((string) $excerpt, ENT_QUOTES, 'UTF-8'); ?>">
-                  <span class="article-title"><?php echo htmlspecialchars((string) $post['title'], ENT_QUOTES, 'UTF-8'); ?></span>
+                  <span class="article-title"><?php echo $postTitle; ?></span>
                   <?php if ($cover !== ''): ?>
-                    <img src="<?php echo htmlspecialchars((string) $cover, ENT_QUOTES, 'UTF-8'); ?>" class="article-cover" loading="lazy" alt="<?php echo htmlspecialchars((string) $post['title'], ENT_QUOTES, 'UTF-8'); ?>" />
+                    <img src="<?php echo htmlspecialchars((string) $cover, ENT_QUOTES, 'UTF-8'); ?>" class="article-cover" loading="lazy" alt="<?php echo $postTitle; ?>" />
                   <?php endif; ?>
                 </a>
               </li>

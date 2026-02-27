@@ -279,7 +279,7 @@ try {
       <a href="<?php echo $prevPost->permalink; ?>" class="surround-link">
         <span class="icon-[solar--rewind-back-bold-duotone] rtl-flip"></span>
         <div class="surround-text">
-          <strong class="title text-creative"><?php echo htmlspecialchars($prevPost->title, ENT_QUOTES, 'UTF-8'); ?></strong>
+          <strong class="title text-creative"><?php echo clarity_display_text((string) $prevPost->title); ?></strong>
           <span class="date"><?php echo $prevPost->date('Y-m-d'); ?></span>
         </div>
       </a>
@@ -294,7 +294,7 @@ try {
       <a href="<?php echo $nextPost->permalink; ?>" class="surround-link align-end">
         <span class="icon-[solar--rewind-forward-bold-duotone] rtl-flip"></span>
         <div class="surround-text">
-          <strong class="title text-creative"><?php echo htmlspecialchars($nextPost->title, ENT_QUOTES, 'UTF-8'); ?></strong>
+          <strong class="title text-creative"><?php echo clarity_display_text((string) $nextPost->title); ?></strong>
           <span class="date"><?php echo $nextPost->date('Y-m-d'); ?></span>
         </div>
       </a>
