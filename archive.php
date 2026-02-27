@@ -23,7 +23,7 @@ $showFeatured = !empty($featuredPosts);
 <div class="archive proper-height">
   <header class="tag-header">
     <div class="tag-info">
-      <h1 class="tag-name"><span class="icon-[ph--article-bold]"></span><span><?php echo htmlspecialchars($archiveTitle, ENT_QUOTES, 'UTF-8'); ?></span></h1>
+      <h1 class="tag-name"><span class="icon-[ph--article-bold]"></span><span><?php echo clarity_display_text($archiveTitle); ?></span></h1>
       <p class="tag-meta">共 <strong><?php echo (int) $this->getTotal(); ?></strong> 篇文章</p>
     </div>
   </header>
@@ -38,17 +38,18 @@ $showFeatured = !empty($featuredPosts);
       $cover = clarity_get_cover($this);
       $excerpt = clarity_get_excerpt($this, 120);
       $views = clarity_get_views($this);
+      $postTitle = clarity_display_text((string) $this->title);
       ?>
       <article class="article-card card" style="--delay: <?php echo ($delayIndex * 0.05); ?>s">
         <a href="<?php $this->permalink(); ?>">
           <?php if ($cover !== ''): ?>
-            <img src="<?php echo htmlspecialchars($cover, ENT_QUOTES, 'UTF-8'); ?>" class="article-cover" loading="lazy" alt="<?php $this->title(); ?>" />
+            <img src="<?php echo htmlspecialchars($cover, ENT_QUOTES, 'UTF-8'); ?>" class="article-cover" loading="lazy" alt="<?php echo $postTitle; ?>" />
           <?php elseif ($showDefaultCover): ?>
-            <div class="article-cover default-cover"><span class="default-cover-title"><?php $this->title(); ?></span></div>
+            <div class="article-cover default-cover"><span class="default-cover-title"><?php echo $postTitle; ?></span></div>
           <?php endif; ?>
         </a>
         <div class="article-body">
-          <h2 class="article-title text-creative"><a href="<?php $this->permalink(); ?>"><?php $this->title(); ?></a></h2>
+          <h2 class="article-title text-creative"><a href="<?php $this->permalink(); ?>"><?php echo $postTitle; ?></a></h2>
           <?php if ($excerpt !== ''): ?>
             <p class="article-description"><?php echo htmlspecialchars($excerpt, ENT_QUOTES, 'UTF-8'); ?></p>
           <?php endif; ?>

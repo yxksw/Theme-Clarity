@@ -105,22 +105,23 @@ $stickyPosts = ($isHomePage && !empty($stickyCids)) ? clarity_get_sticky_posts($
         $cover = clarity_get_cover($post);
         $excerpt = clarity_get_excerpt($post, 120);
         $views = clarity_get_views($post);
+        $postTitle = clarity_display_text((string) ($post->title ?? ''));
         ob_start();
     ?>
       <article class="article-card card" style="--delay: __CLARITY_DELAY__s">
         <a href="<?php $post->permalink(); ?>">
           <?php if ($cover !== ''): ?>
-            <img src="<?php echo htmlspecialchars($cover, ENT_QUOTES, 'UTF-8'); ?>" class="article-cover" loading="lazy" alt="<?php $post->title(); ?>" />
+            <img src="<?php echo htmlspecialchars($cover, ENT_QUOTES, 'UTF-8'); ?>" class="article-cover" loading="lazy" alt="<?php echo $postTitle; ?>" />
           <?php elseif ($showDefaultCover): ?>
             <div class="article-cover default-cover">
-              <span class="default-cover-title"><?php $post->title(); ?></span>
+              <span class="default-cover-title"><?php echo $postTitle; ?></span>
             </div>
           <?php endif; ?>
         </a>
 
         <div class="article-body">
           <h2 class="article-title text-creative">
-            <a href="<?php $post->permalink(); ?>"><?php $post->title(); ?></a>
+            <a href="<?php $post->permalink(); ?>"><?php echo $postTitle; ?></a>
             <?php if ($isSticky): ?>
               <span class="pinned-post">
                 <svg

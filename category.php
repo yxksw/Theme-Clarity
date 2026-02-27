@@ -12,6 +12,7 @@ $categoryUrl = method_exists($this, 'getArchiveUrl') ? $this->getArchiveUrl() : 
 $featuredOnlyHome = clarity_bool(clarity_opt('featured_posts_page', '1'));
 $featuredPosts = $featuredOnlyHome ? [] : clarity_featured_posts();
 $showFeatured = !empty($featuredPosts);
+$safeCategoryName = clarity_display_text($categoryName);
 ?>
 <?php $this->need('header.php'); ?>
 
@@ -21,7 +22,7 @@ $showFeatured = !empty($featuredPosts);
       <div class="category-info">
         <h1 class="category-title text-creative">
           <span class="icon-[ph--folder-bold]"></span>
-          <span><?php echo htmlspecialchars($categoryName, ENT_QUOTES, 'UTF-8'); ?></span>
+          <span><?php echo $safeCategoryName; ?></span>
         </h1>
         <?php if (!empty($categoryDesc)): ?>
           <p class="category-description"><?php echo htmlspecialchars($categoryDesc, ENT_QUOTES, 'UTF-8'); ?></p>
@@ -45,14 +46,15 @@ $showFeatured = !empty($featuredPosts);
           <?php $cover = clarity_get_cover($this); ?>
           <?php $excerpt = clarity_get_excerpt($this, 120); ?>
           <?php $views = clarity_get_views($this); ?>
+          <?php $postTitle = clarity_display_text((string) $this->title); ?>
           <article class="article-card card" style="--delay: <?php echo ($delayIndex * 0.05); ?>s">
             <a href="<?php $this->permalink(); ?>">
               <?php if ($cover !== ''): ?>
-                <img src="<?php echo htmlspecialchars($cover, ENT_QUOTES, 'UTF-8'); ?>" class="article-cover" loading="lazy" alt="<?php $this->title(); ?>" />
+                <img src="<?php echo htmlspecialchars($cover, ENT_QUOTES, 'UTF-8'); ?>" class="article-cover" loading="lazy" alt="<?php echo $postTitle; ?>" />
               <?php endif; ?>
             </a>
             <div class="article-body">
-              <h2 class="article-title text-creative"><a href="<?php $this->permalink(); ?>"><?php $this->title(); ?></a></h2>
+              <h2 class="article-title text-creative"><a href="<?php $this->permalink(); ?>"><?php echo $postTitle; ?></a></h2>
               <?php if ($excerpt !== ''): ?>
                 <p class="article-description"><?php echo htmlspecialchars($excerpt, ENT_QUOTES, 'UTF-8'); ?></p>
               <?php endif; ?>
@@ -76,7 +78,7 @@ $showFeatured = !empty($featuredPosts);
         <span>分类列表</span>
       </a>
       <div class="tag-info">
-        <h1 class="tag-name"><span class="icon-[ph--folder-bold]"></span><span><?php echo htmlspecialchars($categoryName, ENT_QUOTES, 'UTF-8'); ?></span></h1>
+        <h1 class="tag-name"><span class="icon-[ph--folder-bold]"></span><span><?php echo $safeCategoryName; ?></span></h1>
         <p class="tag-meta">共 <strong><?php echo (int) $this->getTotal(); ?></strong> 篇文章</p>
       </div>
     </header>
@@ -88,12 +90,13 @@ $showFeatured = !empty($featuredPosts);
       <?php $delayIndex = 0; ?>
       <?php while ($this->next()): ?>
         <?php $cover = clarity_get_cover($this); ?>
+        <?php $postTitle = clarity_display_text((string) $this->title); ?>
         <li class="article-item" style="--delay: <?php echo ($delayIndex * 0.03); ?>s">
           <time><?php $this->date('m/d'); ?></time>
           <a href="<?php $this->permalink(); ?>" class="article-link gradient-card" title="<?php echo htmlspecialchars(clarity_get_excerpt($this, 80), ENT_QUOTES, 'UTF-8'); ?>">
-            <span class="article-title"><?php $this->title(); ?></span>
+            <span class="article-title"><?php echo $postTitle; ?></span>
             <?php if ($cover !== ''): ?>
-              <img src="<?php echo htmlspecialchars($cover, ENT_QUOTES, 'UTF-8'); ?>" class="article-cover" loading="lazy" alt="<?php $this->title(); ?>" />
+              <img src="<?php echo htmlspecialchars($cover, ENT_QUOTES, 'UTF-8'); ?>" class="article-cover" loading="lazy" alt="<?php echo $postTitle; ?>" />
             <?php endif; ?>
           </a>
         </li>
