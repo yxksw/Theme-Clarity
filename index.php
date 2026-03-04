@@ -3,15 +3,13 @@
  * 基于 halo主题 Clarity 修改的 Typecho 主题
  * @package Clarity
  * @author jkjoy
- * @version 1.1.4
+ * @version 1.1.5
  * @link https://jkjoy.de
  */
 clarity_set('showAside', true);
 clarity_set('pageTitle', null);
 clarity_set('isLinksPage', false);
-?>
-<?php $this->need('header.php'); ?>
-<?php
+$this->need('header.php');
 $logoFallback = \Typecho\Common::url('assets/images/logo.svg', $this->options->themeUrl);
 $logo = clarity_site_logo($logoFallback);
 $showTitle = clarity_bool(clarity_opt('show_title', '1'));
@@ -176,24 +174,48 @@ $stickyPosts = ($isHomePage && !empty($stickyCids)) ? clarity_get_sticky_posts($
         return ob_get_clean();
     };
 
-    $stickyHtml = [];
-    $normalHtml = [];
+    $displayLimit = (int) ($this->parameter->pageSize ?? $this->options->postsListSize ?? 10);
+    if ($displayLimit <= 0) {
+        $displayLimit = 10;
+    }
+
+    $cards = [];
+    $renderedCids = [];
+    $pushCard = function ($post, bool $isSticky) use (&$cards, &$renderedCids, $renderCard) {
+        $cid = (int) ($post->cid ?? 0);
+        if ($cid > 0) {
+            if (isset($renderedCids[$cid])) {
+                return;
+            }
+            $renderedCids[$cid] = true;
+        }
+        $cards[] = $renderCard($post, $isSticky);
+    };
+
     if ($isHomePage && !empty($stickyPosts)) {
         foreach ($stickyPosts as $stickyPost) {
-            $stickyHtml[] = $renderCard($stickyPost, true);
+            $pushCard($stickyPost, true);
+            if (count($cards) >= $displayLimit) {
+                break;
+            }
         }
     }
 
     while ($this->next()):
-        if (isset($stickyMap[(int) $this->cid])) {
+        if (count($cards) >= $displayLimit) {
+            break;
+        }
+
+        $cid = (int) ($this->cid ?? 0);
+        if (isset($stickyMap[$cid])) {
             continue;
         }
         $isSticky = isset($this->fields->sticky) && clarity_bool($this->fields->sticky);
-        $normalHtml[] = $renderCard($this, $isSticky);
+        $pushCard($this, $isSticky);
     endwhile;
 
     $delayIndex = 0;
-    foreach (array_merge($stickyHtml, $normalHtml) as $cardHtml) {
+    foreach ($cards as $cardHtml) {
         $delay = $delayIndex * 0.05;
         echo str_replace('__CLARITY_DELAY__', (string) $delay, $cardHtml);
         $delayIndex++;
