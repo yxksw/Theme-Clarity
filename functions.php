@@ -2500,32 +2500,7 @@ function clarity_get_cover($post): string
     }
     $cover = clarity_get_custom_field_value($post, 'cover');
     if ($cover !== '') {
-        return $cover;
-    }
-
-    try {
-        if (method_exists($post, 'attachments')) {
-            $attachments = $post->attachments();
-            if ($attachments && $attachments->have()) {
-                while ($attachments->next()) {
-                    $attachment = $attachments->attachment ?? null;
-                    if ($attachment && isset($attachment->isImage) && !$attachment->isImage) {
-                        continue;
-                    }
-                    $url = '';
-                    if ($attachment && isset($attachment->url)) {
-                        $url = (string) $attachment->url;
-                    }
-                    if ($url === '' && isset($attachments->url)) {
-                        $url = (string) $attachments->url;
-                    }
-                    if ($url !== '') {
-                        return $url;
-                    }
-                }
-            }
-        }
-    } catch (\Throwable $e) {
+        return trim($cover);
     }
 
     $content = '';
@@ -2539,7 +2514,7 @@ function clarity_get_cover($post): string
     if ($content !== '') {
         $matches = [];
         if (preg_match('/<img[^>]+src=[\'"]([^\'"]+)[\'"]/i', $content, $matches)) {
-            return $matches[1];
+            return trim($matches[1]);
         }
         if (preg_match('/!\\[[^\\]]*\\]\\(([^)\\s]+)(?:\\s+\\"[^\\"]*\\")?\\)/', $content, $matches)) {
             return trim($matches[1]);
